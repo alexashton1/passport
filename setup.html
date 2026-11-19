@@ -93,6 +93,10 @@ $('go').onclick = async () => {
         r.ok ? add('ok', 'Leagues are installed') : add('bad', 'Leagues not installed (' + r.status + ')', 'Run the latest <code>passport.sql</code> again. It’s safe to re-run.');
       } catch (e) { add('bad', 'Leagues check failed', 'Retest in a moment.'); }
       try {
+        const r = await timeout(fetch(url + '/rest/v1/rpc/passport_submit', {method: 'POST', headers: {...H, 'Content-Type': 'application/json'}, body: JSON.stringify({d: 0, p: '00000000-0000-4000-8000-000000000000', s: 0})}));
+        r.status === 404 ? add('bad', 'Score saving is missing', 'Run the latest <code>passport.sql</code> again. It adds the function that saves each day\'s score.') : add('ok', 'Score saving is installed');
+      } catch (e) { add('bad', 'Score saving check failed', 'Retest in a moment.'); }
+      try {
         const r = await timeout(fetch(url + '/rest/v1/passport_saves?select=user_id&limit=1', {headers: H}));
         (r.ok || r.status === 401 || r.status === 403) ? add('ok', 'Account storage is installed', r.ok ? '' : 'Locked to signed-in players, as it should be.') : add('bad', 'Account storage missing (' + r.status + ')', 'Run the latest <code>passport.sql</code> again. It adds the <code>passport_saves</code> table.');
       } catch (e) { add('bad', 'Account storage check failed', 'Retest in a moment.'); }

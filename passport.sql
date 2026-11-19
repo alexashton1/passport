@@ -19,6 +19,13 @@ language sql stable security definer set search_path = public as $$
   select count(*)::bigint, count(*) filter (where score < s)::bigint from public.passport_plays where day = d;
 $$;
 grant execute on function public.passport_rank(int, int) to anon, authenticated;
+-- Saving a score goes through this function, so it works whatever the project's default table permissions are.
+create or replace function public.passport_submit(d int, p uuid, s int)
+returns void language sql volatile security definer set search_path = public as $$
+  insert into public.passport_plays (day, player, score) values (d, p, s) on conflict (day, player) do nothing;
+$$;
+grant execute on function public.passport_submit(int, uuid, int) to anon, authenticated;
+grant insert on public.passport_plays to anon, authenticated;
 
 -- ───────────── Optional accounts ─────────────
 create table if not exists public.passport_saves (

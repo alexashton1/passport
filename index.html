@@ -54,8 +54,10 @@
 .opts.six .opt{min-height:48px;font-size:13.5px}
 .opt .fl{margin-right:6px}
 /* pin map */
+:root{--gOcean:#B9D2D8;--oceanLit:#EAF3F2;--glow:rgba(120,170,190,.28);--limb:rgba(20,45,60,.28);--rim:rgba(20,45,60,.18)}
+@media (prefers-color-scheme:dark){:root{--gOcean:#0F2230;--oceanLit:#24465A;--glow:rgba(90,160,200,.22);--limb:rgba(0,0,0,.45);--rim:rgba(150,200,230,.22)}}
 #pinWrap{position:absolute;inset:0}
-#pinWrap canvas{cursor:crosshair}
+#pinWrap canvas{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#pinWrap canvas:active{cursor:grabbing}
 .find{position:absolute;left:50%;top:44px;transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:99px;padding:7px 14px;font-weight:700;font-size:15px;white-space:nowrap;box-shadow:var(--shadow);display:flex;gap:8px;align-items:center;z-index:3}
 .find small{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
 .zoom{position:absolute;right:10px;top:88px;display:flex;flex-direction:column;gap:6px;z-index:3}
@@ -260,7 +262,7 @@
     <button class="hintbtn" id="bHint"></button>
     <canvas id="map" role="img" aria-label="Outline of the mystery country"></canvas>
     <div id="pinWrap" hidden>
-      <canvas id="pinmap" role="img" aria-label="Blank world map. Tap to drop your pin."></canvas>
+      <canvas id="pinmap" role="img" aria-label="Blank globe. Drag to spin, pinch to zoom, tap to drop your pin."></canvas>
       <div class="find" id="find"></div>
       <div class="zoom"><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zReset" aria-label="Whole world" style="font-size:14px">⤢</button></div>
     </div>
@@ -375,7 +377,9 @@ async function submitScore(day, score) {
   P.prefs.sent = P.prefs.sent || {}; if (P.prefs.sent[day]) return;
   const b = await backend(); if (!b) return;
   try {
-    if (b.kind === 'supabase') { const r = await withTimeout(fetch(SB.url + '/rest/v1/passport_plays', {method: 'POST', headers: {...sbHeaders(), 'Prefer': 'resolution=ignore-duplicates,return=minimal'}, body: JSON.stringify({day, player: playerId(), score})})); if (!r.ok && r.status !== 409) throw 0; }
+    if (b.kind === 'supabase') { let r = await withTimeout(fetch(SB.url + '/rest/v1/rpc/passport_submit', {method: 'POST', headers: sbHeaders(), body: JSON.stringify({d: day, p: playerId(), s: score})}));
+      if (r.status === 404) r = await withTimeout(fetch(SB.url + '/rest/v1/passport_plays', {method: 'POST', headers: {...sbHeaders(), 'Prefer': 'return=minimal'}, body: JSON.stringify({day, player: playerId(), score})}));   // older database setup
+      if (!r.ok && r.status !== 409) { console.warn('Passport: score not saved', r.status, await r.text().catch(() => '')); throw 0; } }
     else { if (!b.uid) return; const ref = b.db.doc('pp/' + b.uid), snap = await withTimeout(ref.get()), k = 'd' + day; if (snap.exists) { if (snap.data()[k] == null) await withTimeout(ref.update({[k]: score})); } else await withTimeout(ref.set({[k]: score})); }
     P.prefs.sent[day] = 1; persist();
   } catch (e) {}
@@ -664,41 +668,101 @@ function dayComplete() {   // streak freezes for account holders + today's score
 /* ---------- outline + pin renderers ---------- */
 const outline = Outline($('map'));
 const Pin = (() => {
-  const canvas = $('pinmap'), ctx = canvas.getContext('2d'), proj = G.geoEqualEarth(), gp = G.geoPath(proj);
-  let W = 0, H = 0, DPR = 1, colors = readColors(), base = null, view = {k: 1, tx: 0, ty: 0}, raf = 0, L = null;
-  function build() { proj.fitExtent([[6, 6], [W - 6, H - 6]], {type: 'Sphere'}); base = {bounds: gp.bounds({type: 'Sphere'}), sphere: new Path2D(gp({type: 'Sphere'})), grat: new Path2D(gp(G.geoGraticule10())), land: new Path2D(feats.map(f => gp(f) || '').join('')), byId: new Map()}; }
-  const featPath = code => { const id = byCode.get(code).g; if (!base.byId.has(id)) base.byId.set(id, new Path2D(gp(featById.get(id)) || '')); return base.byId.get(id); };
-  function clamp() { view.k = Math.min(60, Math.max(1, view.k)); const b = base.bounds, k = view.k; const ax = (lo, hi, size, t) => { lo *= k; hi *= k; return hi - lo <= size ? (size - (hi - lo)) / 2 - lo : Math.min(-lo, Math.max(size - hi, t)); }; view.tx = ax(b[0][0], b[1][0], W, view.tx); view.ty = ax(b[0][1], b[1][1], H, view.ty); }
-  function solve(t) { const s = {...view}; Object.assign(view, t); clamp(); const o = {...view}; Object.assign(view, s); return o; }
-  function home() { const b = base.bounds, mh = b[1][1] - b[0][1], k = Math.max(1, Math.min(2.2, (H - 20) / mh * .92)); return solve({k, tx: W / 2 - (b[0][0] + b[1][0]) / 2 * k, ty: H / 2 - (b[0][1] + b[1][1]) / 2 * k}); }
-  function fit(pts) { const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys); const k = Math.min(30, Math.max(1, .6 * Math.min(W / Math.max(x1 - x0, 4), H / Math.max(y1 - y0, 4)))); return solve({k, tx: W / 2 - (x0 + x1) / 2 * k, ty: H / 2 - (y0 + y1) / 2 * k}); }
+  /* A real globe: drag to spin (with momentum), pinch or scroll to zoom, tap to drop the pin. */
+  const canvas = $('pinmap'), ctx = canvas.getContext('2d');
+  const proj = G.geoOrthographic().clipAngle(90).precision(.4), path = G.geoPath(proj, ctx), grat = G.geoGraticule10();
+  const HOME = [-12, -18], KMAX = 48, deg = 180 / Math.PI;
+  const globeColors = () => { const c = readColors(), st = getComputedStyle(document.documentElement); for (const k of ['oceanLit', 'glow', 'limb', 'rim', 'gOcean']) c[k] = st.getPropertyValue('--' + k).trim(); c.ocean = c.gOcean || c.ocean; return c; };
+  let W = 0, H = 0, DPR = 1, R0 = 100, colors = globeColors(), L = null, raf = 0, spin = 0;
+  let view = {rot: HOME.slice(), k: 1};
+  // land at three levels of detail, so spinning stays smooth on phones
+  const thin = tol => feats.map(f => { const t = r => { const out = [r[0]]; for (let i = 1; i < r.length - 1; i++) { const p = r[i], q = out[out.length - 1]; if (Math.abs(p[0] - q[0]) + Math.abs(p[1] - q[1]) > tol) out.push(p); } out.push(r[r.length - 1]); return out.length >= 4 ? out : null; };
+    const g = f.geometry; if (!g) return null; const polys = (g.type === 'Polygon' ? [g.coordinates] : g.coordinates).map(pl => { const outer = t(pl[0]); return outer ? [outer, ...pl.slice(1).map(t).filter(Boolean)] : null; }).filter(Boolean)
+      .filter(pl => G.geoArea({type: 'Polygon', coordinates: pl}) < 2 * Math.PI);   // a ring simplified inside-out would cover the whole sphere
+    return polys.length ? {type: 'Feature', id: f.id, geometry: {type: 'MultiPolygon', coordinates: polys}} : null; }).filter(Boolean);
+  const LOD = [[0, thin(.9)], [2.5, thin(.25)], [7, feats]];
+  const landFor = k => LOD.filter(([min]) => k >= min).pop()[1];
+  const R = () => R0 * view.k;
+  function apply() { proj.rotate([view.rot[0], view.rot[1], 0]).scale(R()).translate([W / 2, H / 2]); }
+  const center = () => [-view.rot[0], -view.rot[1]];
   function draw() {
-    if (!base || !L) return; const {k, tx, ty} = view;
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H); ctx.setTransform(DPR * k, 0, 0, DPR * k, DPR * tx, DPR * ty);
-    ctx.fillStyle = colors.ocean; ctx.fill(base.sphere); ctx.strokeStyle = colors.grat; ctx.lineWidth = .5 / k; ctx.stroke(base.grat);
-    ctx.fillStyle = colors.land; ctx.fill(base.land); ctx.strokeStyle = colors.landEdge; ctx.lineWidth = .5 / k; ctx.stroke(base.land);
-    if (L.done) { ctx.fillStyle = L.km === 0 ? colors.hit : colors.ink; ctx.fill(featPath(L.code)); ctx.lineWidth = 1.2 / k; ctx.strokeStyle = colors.hit; ctx.stroke(featPath(L.code)); }
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    const scr = ll => { const p = proj(ll); return [p[0] * k + tx, p[1] * k + ty]; };
-    if (L.done && L.at && L.km > 0) { const a = scr(L.pin), b = scr(L.at); ctx.setLineDash([5, 5]); ctx.strokeStyle = colors.ink; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); ctx.setLineDash([]); }
-    if (L.pin) { const [x, y] = scr(L.pin); ctx.fillStyle = colors.accent; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.bezierCurveTo(x - 11, y - 14, x - 9, y - 26, x, y - 26); ctx.bezierCurveTo(x + 9, y - 26, x + 11, y - 14, x, y); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y - 18, 3.5, 0, 7); ctx.fill(); }
+    if (!W || !L) return; apply(); const r = R(), cx = W / 2, cy = H / 2, k = view.k;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+    // atmosphere
+    if (r < Math.max(W, H)) { const glow = ctx.createRadialGradient(cx, cy, r * .96, cx, cy, r * 1.09); glow.addColorStop(0, colors.glow); glow.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, r * 1.1, 0, 7); ctx.fill(); }
+    // ocean, lit from the top left
+    const sea = ctx.createRadialGradient(cx - r * .35, cy - r * .4, r * .05, cx, cy, r * 1.02); sea.addColorStop(0, colors.oceanLit); sea.addColorStop(1, colors.ocean);
+    ctx.beginPath(); path({type: 'Sphere'}); ctx.fillStyle = sea; ctx.fill();
+    ctx.beginPath(); path(grat); ctx.strokeStyle = colors.grat; ctx.lineWidth = .6; ctx.stroke();
+    // land
+    ctx.beginPath(); for (const f of landFor(k)) path(f); ctx.fillStyle = colors.land; ctx.fill(); ctx.strokeStyle = colors.landEdge; ctx.lineWidth = k > 6 ? .9 : .6; ctx.stroke();
+    if (L.done) { const f = featById.get(byCode.get(L.code).g); ctx.beginPath(); path(f); ctx.fillStyle = L.km === 0 ? colors.hit : colors.target; ctx.fill(); ctx.lineWidth = 1.4; ctx.strokeStyle = colors.hit; ctx.stroke(); }
+    // shading: darker limb, soft highlight
+    const shade = ctx.createRadialGradient(cx - r * .3, cy - r * .35, r * .1, cx, cy, r); shade.addColorStop(0, 'rgba(255,255,255,.10)'); shade.addColorStop(.55, 'rgba(255,255,255,0)'); shade.addColorStop(1, colors.limb);
+    ctx.beginPath(); path({type: 'Sphere'}); ctx.fillStyle = shade; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = colors.rim; ctx.stroke();
+    // great-circle line from the pin to the nearest border
+    if (L.done && L.at && L.km > 0) { ctx.beginPath(); path({type: 'LineString', coordinates: [L.pin, L.at]}); ctx.setLineDash([5, 5]); ctx.strokeStyle = colors.ink; ctx.lineWidth = 1.8; ctx.stroke(); ctx.setLineDash([]); }
+    if (L.pin && G.geoDistance(L.pin, center()) < Math.PI / 2 - .01) { const [x, y] = proj(L.pin);
+      ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x, y, 5, 2, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = colors.accent; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.bezierCurveTo(x - 11, y - 14, x - 9, y - 26, x, y - 26); ctx.bezierCurveTo(x + 9, y - 26, x + 11, y - 14, x, y); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y - 18, 3.5, 0, 7); ctx.fill(); }
   }
-  function animateTo(t, ms = 900) { cancelAnimationFrame(raf); const from = {...view}, t0 = performance.now(), ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; const step = now => { const p = Math.min(1, (now - t0) / ms), e = ease(p); view.k = Math.exp(Math.log(from.k) + (Math.log(t.k) - Math.log(from.k)) * e); view.tx = from.tx + (t.tx - from.tx) * e; view.ty = from.ty + (t.ty - from.ty) * e; draw(); if (p < 1) raf = requestAnimationFrame(step); }; raf = requestAnimationFrame(step); }
-  function zoomAt(f, x, y) { const k2 = Math.min(60, Math.max(1, view.k * f)), q = k2 / view.k; view.tx = x - (x - view.tx) * q; view.ty = y - (y - view.ty) * q; view.k = k2; clamp(); draw(); }
-  function reveal(anim) { const cl = GK.cluster(L.code), b = gp.bounds(cl ? cl.geom : featById.get(byCode.get(L.code).g)), t = fit([b[0], b[1], proj(L.pin)]); anim ? animateTo(t, 1100) : (Object.assign(view, t), draw()); }
-  function resize() { const r = canvas.getBoundingClientRect(); if (!r.width) return; cancelAnimationFrame(raf); DPR = Math.min(devicePixelRatio || 1, 2.5); W = r.width; H = r.height; canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR); build(); view = home(); if (L && L.done) reveal(false); else draw(); }
+  let queued = false; const redraw = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; draw(); }); };
+  const clampView = () => { view.k = Math.min(KMAX, Math.max(.85, view.k)); view.rot[1] = Math.max(-89, Math.min(89, view.rot[1])); view.rot[0] = ((view.rot[0] + 540) % 360) - 180; };
+  function stopAll() { cancelAnimationFrame(raf); cancelAnimationFrame(spin); raf = spin = 0; }
+  function animateTo(t, ms = 900) {
+    stopAll(); if (matchMedia('(prefers-reduced-motion: reduce)').matches) ms = 1;
+    const from = {rot: view.rot.slice(), k: view.k}, t0 = performance.now(), ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    let dl = t.rot[0] - from.rot[0]; dl = ((dl + 540) % 360) - 180;
+    const step = now => { const p = Math.min(1, (now - t0) / ms), e = ease(p);
+      view.rot = [from.rot[0] + dl * e, from.rot[1] + (t.rot[1] - from.rot[1]) * e]; view.k = Math.exp(Math.log(from.k) + (Math.log(t.k) - Math.log(from.k)) * e); clampView(); draw();
+      if (p < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+  }
+  // zoom keeping the point under (x, y) where it is
+  function zoomAt(f, x, y) {
+    apply(); const before = proj.invert([x, y]); view.k *= f; clampView(); apply();
+    if (before && isFinite(before[0]) && Math.hypot(x - W / 2, y - H / 2) < R()) { const after = proj.invert([x, y]); if (after && isFinite(after[0])) { view.rot[0] += after[0] - before[0]; view.rot[1] += after[1] - before[1]; clampView(); } }
+    redraw();
+  }
+  function reveal(anim) {
+    const f = featById.get(byCode.get(L.code).g), cl = GK.cluster(L.code), c = cl ? cl.center : G.geoCentroid(f);
+    const target = L.at || c, mid = L.pin ? G.geoInterpolate(L.pin, target)(.5) : c;
+    const b = G.geoBounds(cl ? cl.geom : f), size = Math.max(G.geoDistance(b[0], b[1]) / 2, .004);
+    const a = Math.min(Math.PI / 2, Math.max(size * 1.4, L.pin ? G.geoDistance(L.pin, target) / 2 + size * .4 : 0, .012));
+    const k = Math.min(KMAX, Math.max(1, .40 / Math.sin(a) * Math.min(W, H) / 2 / R0));
+    const t = {rot: [-mid[0], -mid[1]], k}; anim ? animateTo(t, 1300) : (Object.assign(view, t), clampView(), draw());
+  }
+  function resize() { const r = canvas.getBoundingClientRect(); if (!r.width) return; stopAll(); DPR = Math.min(devicePixelRatio || 1, 2.5); W = r.width; H = r.height; canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR); R0 = Math.min(W, H) / 2 - 16; if (L && L.done) reveal(false); else draw(); }
   new ResizeObserver(resize).observe(canvas);
-  // gestures
-  const ptrs = new Map(); let g = null;
-  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, {x: e.offsetX, y: e.offsetY}); g = {moved: false, start: {x: e.offsetX, y: e.offsetY}, view: {...view}}; if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; g.dist = Math.hypot(a.x - b.x, a.y - b.y); g.mid = {x: (a.x + b.x) / 2, y: (a.y + b.y) / 2}; g.moved = true; } });
-  canvas.addEventListener('pointermove', e => { if (!ptrs.has(e.pointerId) || !g) return; ptrs.set(e.pointerId, {x: e.offsetX, y: e.offsetY}); if (ptrs.size === 2 && g.dist) { const [a, b] = [...ptrs.values()]; view = {...g.view}; zoomAt(Math.hypot(a.x - b.x, a.y - b.y) / g.dist, g.mid.x, g.mid.y); return; } const dx = e.offsetX - g.start.x, dy = e.offsetY - g.start.y; if (Math.hypot(dx, dy) > 6) g.moved = true; if (g.moved && ptrs.size === 1) { view.tx = g.view.tx + dx; view.ty = g.view.ty + dy; clamp(); draw(); } });
-  const up = e => { if (!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId); if (!ptrs.size && g && !g.moved && e.type === 'pointerup') place(e.offsetX, e.offsetY); if (!ptrs.size) g = null; };
+  // gestures: one finger spins, two fingers pinch and spin, a tap drops the pin
+  const ptrs = new Map(); let g = null, lastTap = 0, vel = [0, 0], lastMove = 0;
+  const pos = e => { const r = canvas.getBoundingClientRect(); return {x: e.clientX - r.left, y: e.clientY - r.top}; };
+  const begin = () => { const p = [...ptrs.values()]; const m = p.length > 1 ? {x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2} : p[0]; g = {...g, mid: m, dist: p.length > 1 ? Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) : 0, rot: view.rot.slice(), k: view.k}; };
+  canvas.addEventListener('pointerdown', e => { e.preventDefault(); stopAll(); canvas.setPointerCapture(e.pointerId); const p = pos(e); ptrs.set(e.pointerId, p); if (ptrs.size === 1) g = {moved: false, start: p, t: performance.now()}; else g.moved = true; begin(); vel = [0, 0]; });
+  canvas.addEventListener('pointermove', e => { if (!ptrs.has(e.pointerId) || !g) return; ptrs.set(e.pointerId, pos(e)); const p = [...ptrs.values()];
+    const m = p.length > 1 ? {x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2} : p[0];
+    if (!g.moved && Math.hypot(m.x - g.start.x, m.y - g.start.y) < 7) return; g.moved = true;
+    if (p.length > 1 && g.dist) view.k = g.k * Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) / g.dist;
+    const r = R0 * view.k, prev = view.rot.slice();
+    view.rot = [g.rot[0] + (m.x - g.mid.x) / r * deg, g.rot[1] - (m.y - g.mid.y) / r * deg]; clampView();
+    const now = performance.now(), dt = Math.max(8, now - lastMove); lastMove = now; let dl = view.rot[0] - prev[0]; dl = ((dl + 540) % 360) - 180;
+    vel = [vel[0] * .5 + dl / dt * 8, vel[1] * .5 + (view.rot[1] - prev[1]) / dt * 8]; redraw(); });
+  const up = e => { if (!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId);
+    if (ptrs.size) { begin(); vel = [0, 0]; return; }               // one finger lifted mid-pinch: carry on with the other, no jump
+    const tap = g && !g.moved && e.type === 'pointerup' && performance.now() - g.t < 500;
+    if (tap) { const p = pos(e), now = performance.now(); if (now - lastTap < 320) { lastTap = 0; zoomAt(2.2, p.x, p.y); } else { lastTap = now; place(p.x, p.y); } }
+    else if (g && g.moved && performance.now() - lastMove < 60 && Math.hypot(...vel) > .15 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const glide = () => { vel = [vel[0] * .93, vel[1] * .93]; view.rot = [view.rot[0] + vel[0], view.rot[1] + vel[1]]; clampView(); draw(); if (Math.hypot(...vel) > .02) spin = requestAnimationFrame(glide); else spin = 0; };
+      spin = requestAnimationFrame(glide); }
+    g = null; };
   canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
-  canvas.addEventListener('wheel', e => { e.preventDefault(); zoomAt(Math.exp(-e.deltaY * .002), e.offsetX, e.offsetY); }, {passive: false});
-  $('zIn').onclick = () => zoomAt(2, W / 2, H / 2); $('zOut').onclick = () => zoomAt(.5, W / 2, H / 2); $('zReset').onclick = () => animateTo(home(), 500);
-  function place(x, y) { if (!L || L.done) return; const bx = (x - view.tx) / view.k, by = (y - view.ty) / view.k, ll = proj.invert([bx, by]); if (!ll || !isFinite(ll[0])) return; const back = proj(ll); if (!back || Math.hypot(back[0] - bx, back[1] - by) > 1) return; L.pin = ll; save(); draw(); render(); }
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { colors = readColors(); draw(); });
-  return {use(l, fresh) { L = l; if (fresh && base) { cancelAnimationFrame(raf); view = home(); } if (base) { if (L.done) reveal(false); else draw(); } }, reveal, draw, resize, placeLL(lon, lat) { const p = proj([lon, lat]); place(p[0] * view.k + view.tx, p[1] * view.k + view.ty); }};
+  canvas.addEventListener('wheel', e => { e.preventDefault(); stopAll(); const p = pos(e); zoomAt(Math.exp(-e.deltaY * .0022), p.x, p.y); }, {passive: false});
+  $('zIn').onclick = () => { stopAll(); zoomAt(2, W / 2, H / 2); }; $('zOut').onclick = () => { stopAll(); zoomAt(.5, W / 2, H / 2); };
+  $('zReset').onclick = () => animateTo({rot: L && L.pin ? [-L.pin[0], -L.pin[1]] : view.rot.slice(), k: 1}, 600);
+  function place(x, y) { if (!L || L.done) return; apply(); if (Math.hypot(x - W / 2, y - H / 2) > R()) return; const ll = proj.invert([x, y]); if (!ll || !isFinite(ll[0]) || G.geoDistance(ll, center()) > Math.PI / 2) return; L.pin = ll; save(); draw(); render(); }
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { colors = globeColors(); draw(); });
+  return {state: () => ({rot: view.rot.slice(), k: view.k}), use(l, fresh) { L = l; if (fresh) { stopAll(); view = {rot: HOME.slice(), k: 1}; } if (W) { if (L.done) reveal(false); else draw(); } }, reveal, draw, resize,
+    placeLL(lon, lat) { L && !L.done && (L.pin = [lon, lat], save(), draw(), render()); }};
 })();
 
 /* ---------- rendering ---------- */
@@ -1111,7 +1175,7 @@ const started = S.levels.some(l => l.done || (l.tries || []).length || l.pin);
 if (checkInvite()) {}
 else if (!started && P.prefs.boarded !== S.day) setTimeout(showBoarding, 250);
 else if (allDone()) setTimeout(showResults, 400);
-window.__proto = {capMatch, pinFactor, pinScale, BIGGER_PAY, P, rankOf, xpTotal, streak, S: () => S, render, pinAt: (lon, lat) => Pin.placeLL(lon, lat), book};
+window.__proto = {capMatch, pinFactor, pinScale, BIGGER_PAY, P, rankOf, xpTotal, streak, S: () => S, render, pinAt: (lon, lat) => Pin.placeLL(lon, lat), pin: () => Pin.state(), book};
 })();
 </script>
 </body>
