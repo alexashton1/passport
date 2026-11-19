@@ -186,6 +186,7 @@
 .pass-league{margin:4px 14px 0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--near) 18%,var(--bg));font-size:13.5px;line-height:1.4;animation:stopin .5s both}
 .live .js-proto{display:none!important}
 .sharebox{-webkit-user-select:text;user-select:text}
+.legal{text-align:center;margin:12px 0 0}.legal a,.fine a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
 /* ---- v4: drawn icons, inked stamps, flight route ---- */
 .ico{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em;flex:none}
@@ -299,6 +300,7 @@
     <div><i>__expert__</i><span>Too easy? Turn on <b>Expert mode</b> in Settings to type your answers.</span></div>
   </div>
   <button class="btn wide" data-close>Open my passport</button>
+  <p class="fine legal"><a href="privacy.html">Privacy</a> · No ads, no tracking.</p>
 </div></dialog>
 <dialog id="dSet"><div class="sheet" tabindex="-1" autofocus>
   <button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -452,7 +454,7 @@ const Account = (() => {
     return '<div class="savecard"><div class="sc-head">' + ico('book') + ' Save your passport</div>' +
       '<ul class="perks"><li><b>Keep your ' + n + ' countr' + (n === 1 ? 'y' : 'ies') + (st > 1 ? ' and ' + st + '-day streak' : '') + '</b> if you change or lose your phone</li><li><b>Streak freezes:</b> miss a day without losing your streak</li><li><b>Play anywhere:</b> phone, laptop, tablet</li></ul>' +
       (sentTo ? '<p class="fine">We emailed <b>' + esc(sentTo) + '</b>. Tap the link, or type the 6-digit code:</p><div class="field"><input class="tin" data-ac="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"><button class="btn" data-ac="verify">Verify</button></div><button class="linkbtn" data-ac="back">Use a different email</button>'
-        : '<div class="field"><input class="tin" data-ac="email" type="email" autocomplete="email" placeholder="you@example.com"><button class="btn accent" data-ac="send">Save</button></div><p class="fine" style="margin-top:6px">Free, no password. We only use your email to sign you in.</p>') +
+        : '<div class="field"><input class="tin" data-ac="email" type="email" autocomplete="email" placeholder="you@example.com"><button class="btn accent" data-ac="send">Save</button></div><p class="fine" style="margin-top:6px">Free, no password. We only use your email to sign you in. <a href="privacy.html">Privacy</a></p>') +
       '<div class="msg" data-ac="msg"></div></div>';
   }
   document.addEventListener('click', async e => {
