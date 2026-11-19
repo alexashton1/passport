@@ -184,7 +184,7 @@
 .lnudge{display:flex;align-items:center;gap:12px;margin-top:16px;padding:14px;border-radius:16px;background:var(--bg);border:1.5px dashed color-mix(in srgb,var(--accent) 50%,var(--line))}
 .lnudge b{display:block;font-size:15px}.lnudge span{font-size:13px;color:var(--ink2)}.lnudge .btn{height:42px;font-size:14px;flex:none}
 .pass-league{margin:4px 14px 0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--near) 18%,var(--bg));font-size:13.5px;line-height:1.4;animation:stopin .5s both}
-.live .js-proto{display:none!important}
+html:not(.is-proto) .js-proto{display:none!important}   /* hidden until test mode is confirmed, so it never flashes on the live site */
 .sharebox{-webkit-user-select:text;user-select:text}
 .sheet{overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}.boarddlg .sheet{overflow:visible;touch-action:auto}
 dialog:not(.boarddlg){overflow:hidden;overscroll-behavior:contain}.res .page{overflow:hidden;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(2px,1vw,4px);padding:14px clamp(3px,1.5vw,6px)}
@@ -369,7 +369,7 @@ const persist = () => { store.set(STORE_KEY, P); Account.push(); };
 /* ================= backends: Claude preview database, or Supabase on your own site ================= */
 const CFG = window.PASSPORT_CONFIG || {};
 const PROTO = CFG.prototype !== false;   // the live site sets prototype: false (no replay, no reset)
-if (!PROTO) document.documentElement.classList.add('live');
+document.documentElement.classList.add(PROTO ? 'is-proto' : 'live');
 const SB = {url: String(CFG.supabaseUrl || '').trim().replace(/\/+$/, ''), key: String(CFG.supabaseKey || '').trim()};
 const cap = name => (window.claude && typeof window.claude.use === 'function') ? Promise.resolve(window.claude.use(name)).catch(() => null) : Promise.resolve(null);
 const withTimeout = (p, ms = 9000) => Promise.race([p, new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms))]);
