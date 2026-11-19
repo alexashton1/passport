@@ -777,7 +777,7 @@ function build() {
     if (kind === 'flag') { const a = take(FAME[lv]); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
     if (kind === 'capital') { const a = take(FAME[lv], c => c.cap); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1, c => c.cap && c.cap !== a.cap)]).map(c => c.c); }
     if (kind === 'whose') { const a = take(FAME[lv], c => c.cap); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
-    if (kind === 'borders') { const a = take(FAME[lv], c => c.b.filter(b => byCode.has(b)).length >= 3); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
+    if (kind === 'borders') { const a = take(FAME[lv], c => c.b.filter(b => byCode.has(b)).length >= 3); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, 999).filter(c => !a.b.includes(c.c)).slice(0, n - 1)]).map(c => c.c); }
     if (kind === 'odd') {
       const s = take(FAME[lv], c => c.b.filter(b => byCode.has(b)).length >= n - 1); const nb = shuffle(r, s.b.filter(b => byCode.has(b))).slice(0, n - 1);
       const odd = UN.filter(c => c.c !== s.c && !s.b.includes(c.c) && !used.has(c.c)).map(c => [c, distKm(c.ll, s.ll)]).sort((a, b) => a[1] - b[1]).slice(0, 6);
