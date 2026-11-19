@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Passport — five geography stamps a day</title>
+<title>Passport: five geography stamps a day</title>
 <meta name="description" content="Passport is a free daily geography game. Five quick challenges (outlines, flags, capitals, borders, maps), each harder than the last. Fill your passport with all 195 countries.">
 <meta name="theme-color" content="#7A2E3B">
-<meta property="og:title" content="Passport — five geography stamps a day">
+<meta property="og:title" content="Passport: five geography stamps a day">
 <meta property="og:description" content="Five quick geography challenges a day. Score up to 1,000, collect all 195 countries, and beat your group chat.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://playpassport.club/">
@@ -940,7 +940,7 @@ const VIEWS = {
     for (const g of L.tries) if (g !== L.code) tint[g] = guessFeedback(g, L.code).cls;
     outline.set({code: L.code, zoom: L.done ? .5 : [0, .4, .75][Math.min(misses, 2)], others: misses || L.done ? 1 : 0, labels: [...L.tries.filter(g => g !== L.code), ...(misses >= 2 || L.done ? A.b : [])], tint, reveal: L.done && L.pts > 0}, animate);
     $('chips').innerHTML = L.tries.filter(g => g !== L.code).map(g => { const f = guessFeedback(g, L.code), c = byCode.get(g); return '<span class="chip c-' + f.cls + '">' + flag(g) + ' ' + esc(c.n) + ' · ' + (f.border ? 'touching' : fmtKm(f.km)) + ' ' + arrow(f.deg) + '</span>'; }).join('');
-    $('inp').placeholder = 'Guess ' + (L.tries.length + 1) + ' of 3 — which country?';
+    $('inp').placeholder = 'Guess ' + (L.tries.length + 1) + ' of 3. Which country?';
   },
   flag(L) { pane('<div class="k">Whose flag is this?</div><div class="flagimg" role="img" aria-label="A country’s flag" style="background-image:' + flagUrl(L.code) + '"></div>'); choices(L, c => esc(c.n)); },
   capital(L) { const A = byCode.get(L.code); pane('<div class="k">Capital city</div><div class="q">What’s the capital of<br>' + flag(L.code) + ' ' + esc(A.n) + '?</div>'); choices(L, c => esc(c.cap), true); },

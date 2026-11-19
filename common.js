@@ -1,4 +1,4 @@
-/* GK — shared toolkit for the Wider-family prototypes (data, daily seeding, geo maths, UI bits). */
+/* GK: shared toolkit for the Wider-family prototypes (data, daily seeding, geo maths, UI bits). */
 window.GK = (() => {
   'use strict';
   const C = window.WIDER_COUNTRIES, T = window.WIDER_TOPO;
