@@ -553,6 +553,8 @@ const FX = (() => {
     right() { if (on()) { tone(659, 0, .12, 'triangle'); tone(988, .08, .25, 'triangle'); } buzz(15); },
     wrong() { if (on()) tone(190, 0, .2, 'sawtooth', .05, 120); buzz([30, 40, 30]); },
     stamp() { if (on()) { thud(0); tone(120, 0, .16, 'sine', .22, 60); } buzz(28); },
+    drop() { if (on()) { tone(520, 0, .05, 'triangle', .07, 260); tone(140, .03, .12, 'sine', .14, 70); } buzz(10); },
+    whoosh() { if (on()) tone(300, 0, .9, 'sine', .035, 900); },
     tick() { const n = performance.now(); if (on() && n - lastTick > 45) { lastTick = n; tone(1500, 0, .025, 'square', .025); } },
     rank() { if (on()) [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .09, .3, 'triangle', .13)); buzz([20, 30, 20, 30, 40]); },
     board() { if (on()) { tone(260, 0, .7, 'sine', .07, 640); tone(390, .05, .7, 'sine', .04, 960); } buzz(12); },
@@ -680,7 +682,7 @@ const Pin = (() => {
   const canvas = $('pinmap'), ctx = canvas.getContext('2d');
   const proj = G.geoOrthographic().clipAngle(90).precision(.4), path = G.geoPath(proj, ctx), grat = G.geoGraticule10();
   const HOME = [-12, -18], KMAX = 48, deg = 180 / Math.PI;
-  const globeColors = () => { const c = readColors(), st = getComputedStyle(document.documentElement); for (const k of ['oceanLit', 'glow', 'limb', 'rim', 'gOcean']) c[k] = st.getPropertyValue('--' + k).trim(); c.ocean = c.gOcean || c.ocean; return c; };
+  const globeColors = () => { const c = readColors(), st = getComputedStyle(document.documentElement); for (const k of ['oceanLit', 'glow', 'limb', 'rim', 'gOcean']) c[k] = st.getPropertyValue('--' + k).trim(); c.ocean = c.gOcean || c.ocean; c.gold = '#D9A21B'; c.needle = matchMedia('(prefers-color-scheme: dark)').matches ? '#C9C2B4' : '#3A2A20'; c.bg = st.getPropertyValue('--surface').trim() || st.getPropertyValue('--bg').trim() || '#fff'; c.line = st.getPropertyValue('--line').trim() || 'rgba(0,0,0,.15)'; c.font = st.getPropertyValue('--sans').trim() || 'system-ui, sans-serif'; c.serif = st.getPropertyValue('--serif').trim() || 'Georgia, serif'; return c; };
   let W = 0, H = 0, DPR = 1, R0 = 100, colors = globeColors(), L = null, raf = 0, spin = 0;
   let view = {rot: HOME.slice(), k: 1};
   // land at three levels of detail, so spinning stays smooth on phones
@@ -704,26 +706,67 @@ const Pin = (() => {
     ctx.beginPath(); path(grat); ctx.strokeStyle = colors.grat; ctx.lineWidth = .6; ctx.stroke();
     // land
     ctx.beginPath(); for (const f of landFor(k)) path(f); ctx.fillStyle = colors.land; ctx.fill(); ctx.strokeStyle = colors.landEdge; ctx.lineWidth = k > 6 ? .9 : .6; ctx.stroke();
-    if (L.done) { const f = featById.get(byCode.get(L.code).g); ctx.beginPath(); path(f); ctx.fillStyle = L.km === 0 ? colors.hit : colors.target; ctx.fill(); ctx.lineWidth = 1.4; ctx.strokeStyle = colors.hit; ctx.stroke(); }
+    if (L.done) { const f = featById.get(byCode.get(L.code).g), a = fx.land ? Math.min(1, (performance.now() - fx.land) / 450) : 1; ctx.globalAlpha = a; ctx.beginPath(); path(f); ctx.fillStyle = L.km === 0 ? colors.gold : colors.target; ctx.fill(); ctx.lineWidth = 1.4; ctx.strokeStyle = L.km === 0 ? colors.gold : colors.hit; ctx.stroke(); ctx.globalAlpha = 1; }
     // shading: darker limb, soft highlight
     const shade = ctx.createRadialGradient(cx - r * .3, cy - r * .35, r * .1, cx, cy, r); shade.addColorStop(0, 'rgba(255,255,255,.10)'); shade.addColorStop(.55, 'rgba(255,255,255,0)'); shade.addColorStop(1, colors.limb);
     ctx.beginPath(); path({type: 'Sphere'}); ctx.fillStyle = shade; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = colors.rim; ctx.stroke();
     // great-circle line from the pin to the nearest border
-    if (L.done && L.at && L.km > 0) { ctx.beginPath(); path({type: 'LineString', coordinates: [L.pin, L.at]}); ctx.setLineDash([5, 5]); ctx.strokeStyle = colors.ink; ctx.lineWidth = 1.8; ctx.stroke(); ctx.setLineDash([]); }
-    if (L.pin && G.geoDistance(L.pin, center()) < Math.PI / 2 - .01) { const [x, y] = proj(L.pin);
-      ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x, y, 5, 2, 0, 0, 7); ctx.fill();
-      ctx.fillStyle = colors.accent; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.bezierCurveTo(x - 11, y - 14, x - 9, y - 26, x, y - 26); ctx.bezierCurveTo(x + 9, y - 26, x + 11, y - 14, x, y); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y - 18, 3.5, 0, 7); ctx.fill(); }
+    const now = performance.now(), vis = ll => G.geoDistance(ll, center()) < Math.PI / 2 - .01;
+    // the flight: a dotted great circle drawn as the plane flies it, then left on the globe
+    const route = L.at && L.km > 0 && L.pin && (L.done || fx.fly) ? (fx.fly ? fx.fly.t : 1) : 0;
+    if (route > 0) { const gi = G.geoInterpolate(L.pin, L.at), n = Math.max(2, Math.ceil(48 * route)), pts = Array.from({length: n + 1}, (_, i) => gi(route * i / n));
+      ctx.beginPath(); path({type: 'LineString', coordinates: pts}); ctx.setLineDash([5, 5]); ctx.strokeStyle = colors.ink; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+      if (fx.fly && fx.fly.t < 1) { const a = gi(route), b = gi(Math.min(1, route + .01)); if (vis(a)) { const [x, y] = proj(a), q = proj(b), ang = Math.atan2(q[1] - y, q[0] - x) + Math.PI / 2;
+        ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.scale(1.25, 1.25); ctx.translate(-12, -12); ctx.fillStyle = colors.ink; ctx.strokeStyle = colors.bg; ctx.lineWidth = 1.6; ctx.stroke(PLANE); ctx.fill(PLANE); ctx.restore(); } } }
+    // distance counter
+    if (fx.km != null && now < fx.kmUntil) { const txt = Math.round(fx.km).toLocaleString() + ' km', a = Math.min(1, (fx.kmUntil - now) / 400);
+      ctx.globalAlpha = a; ctx.font = '700 15px ' + colors.font; const w = ctx.measureText(txt).width + 28, x = W / 2 - w / 2, y = H - 50;
+      ctx.fillStyle = colors.bg; ctx.strokeStyle = colors.line; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, 32, 16) : ctx.rect(x, y, w, 32); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = colors.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(txt, W / 2, y + 16.5); ctx.globalAlpha = 1; }
+    if (L.pin && vis(L.pin)) { const [x, y] = proj(L.pin);
+      // ripple when the pin lands; gold rings for a bullseye
+      for (const rp of fx.rings) { const p = (now - rp.t0) / rp.ms; if (p < 0 || p > 1) continue; const e = 1 - Math.pow(1 - p, 3); ctx.globalAlpha = 1 - p; ctx.strokeStyle = rp.c; ctx.lineWidth = rp.w * (1 - p * .6); ctx.beginPath(); ctx.arc(x, y, 4 + rp.r * e, 0, 7); ctx.stroke(); }
+      ctx.globalAlpha = 1;
+      // the drop: falls in, squashes, bounces once
+      let lift = 0, sq = 1, sh = 1; if (fx.drop) { const p = Math.min(1, (now - fx.drop) / 520); if (p < .6) { const q = p / .6; lift = 70 * (1 - q * q); sh = .3 + .7 * q; } else { const q = (p - .6) / .4; lift = 9 * Math.sin(Math.PI * q); sq = 1 - .12 * Math.sin(Math.PI * Math.min(1, q * 2.2)); } }
+      ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x, y, 5.5 * sh, 2.2 * sh, 0, 0, 7); ctx.fill();
+      // compass marker: a brass-rimmed disc on a fine needle; the needle's tip is the exact guess
+      ctx.save(); ctx.translate(x, y - lift); ctx.scale(2 - sq, sq);
+      ctx.strokeStyle = colors.needle; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -21); ctx.stroke();
+      ctx.fillStyle = colors.needle; ctx.beginPath(); ctx.arc(0, 0, 1.6, 0, 7); ctx.fill();
+      const cy = -34, rr = 13; ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.arc(1.2, cy + 1.6, rr + 1.5, 0, 7); ctx.fill();
+      ctx.fillStyle = '#7A2A3A'; ctx.strokeStyle = colors.gold; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.arc(0, cy, rr, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, cy, rr - 3.5, 0, 7); ctx.stroke();
+      const spin = fx.spin ? Math.min(1, (now - fx.spin) / 900) : 1, ang = (1 - Math.pow(1 - spin, 3)) * Math.PI * 4, glow = fx.spin && spin < 1 ? Math.sin(spin * Math.PI) : 0;
+      ctx.save(); ctx.translate(0, cy); ctx.rotate(ang);
+      ctx.fillStyle = glow ? colors.gold : '#fff'; ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(2.6, 0); ctx.lineTo(0, 10); ctx.lineTo(-2.6, 0); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(0, -2.2); ctx.lineTo(9, 0); ctx.lineTo(0, 2.2); ctx.closePath(); ctx.fill();
+      ctx.restore(); ctx.fillStyle = colors.gold; ctx.beginPath(); ctx.arc(0, cy, 2.3, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(-4.5, cy - 6, 4, 2, -.6, 0, 7); ctx.fill();
+      if (glow) { ctx.globalAlpha = glow * .55; ctx.strokeStyle = colors.gold; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, cy, rr + 5, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
+      ctx.restore(); }
+    // verdict label over the destination
+    if (fx.label && now < fx.label.until) { const p = Math.min(1, (now - fx.label.t0) / 260), out = Math.min(1, (fx.label.until - now) / 350), anchor = L.at && L.km > 0 ? L.at : L.pin;
+      if (anchor && vis(anchor)) { const [x, y] = proj(anchor); ctx.globalAlpha = Math.min(p, out); ctx.font = '700 ' + (16 + 4 * (1 - p)) + 'px ' + colors.serif; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.lineWidth = 4; ctx.strokeStyle = colors.bg; const oy = anchor === L.pin ? 56 : 30; ctx.strokeText(fx.label.text, x, y - oy - 8 * p); ctx.fillStyle = fx.label.c; ctx.fillText(fx.label.text, x, y - oy - 8 * p); ctx.globalAlpha = 1; } }
   }
+  // effects run on their own loop, so spinning the globe never cuts them short
+  const PLANE = new Path2D('M12 2.3c.95 0 1.55 1.05 1.55 2.4v4.1l7.2 4.3v2l-7.2-2.2v4.5l2.1 1.6v1.6L12 19.5l-3.65 1.1V19l2.1-1.6v-4.5l-7.2 2.2v-2l7.2-4.3V4.7c0-1.35.6-2.4 1.55-2.4z');
+  const fx = {drop: 0, spin: 0, rings: [], fly: null, km: null, kmUntil: 0, land: 0, label: null, until: 0, raf: 0};
+  const calmFx = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function fxRun(ms) { fx.until = Math.max(fx.until, performance.now() + ms); if (fx.raf) return; const step = () => { draw(); if (performance.now() < fx.until) fx.raf = requestAnimationFrame(step); else { fx.raf = 0; fx.rings = fx.rings.filter(r => performance.now() - r.t0 < r.ms); draw(); } }; fx.raf = requestAnimationFrame(step); }
+  function dropFx() { if (calmFx()) return; const t = performance.now(); fx.drop = t; fx.rings.push({t0: t + 310, ms: 650, r: 34, w: 2.2, c: colors.accent}); setTimeout(() => FX.sfx.drop(), 300); fxRun(1000); }
   let queued = false; const redraw = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; draw(); }); };
   const clampView = () => { view.k = Math.min(KMAX, Math.max(.85, view.k)); view.rot[1] = Math.max(-89, Math.min(89, view.rot[1])); view.rot[0] = ((view.rot[0] + 540) % 360) - 180; };
-  function stopAll() { cancelAnimationFrame(raf); cancelAnimationFrame(spin); raf = spin = 0; }
-  function animateTo(t, ms = 900) {
-    stopAll(); if (matchMedia('(prefers-reduced-motion: reduce)').matches) ms = 1;
+  let pendingDone = null;   // a camera move that something is waiting on (the lock-in flight) still finishes if a finger interrupts it
+  function stopAll() { cancelAnimationFrame(raf); cancelAnimationFrame(spin); raf = spin = 0; if (pendingDone) { const d = pendingDone; pendingDone = null; d(); } }
+  function animateTo(t, ms = 900, done) {
+    stopAll(); pendingDone = done || null; if (matchMedia('(prefers-reduced-motion: reduce)').matches) ms = 1;
     const from = {rot: view.rot.slice(), k: view.k}, t0 = performance.now(), ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     let dl = t.rot[0] - from.rot[0]; dl = ((dl + 540) % 360) - 180;
     const step = now => { const p = Math.min(1, (now - t0) / ms), e = ease(p);
       view.rot = [from.rot[0] + dl * e, from.rot[1] + (t.rot[1] - from.rot[1]) * e]; view.k = Math.exp(Math.log(from.k) + (Math.log(t.k) - Math.log(from.k)) * e); clampView(); draw();
-      if (p < 1) raf = requestAnimationFrame(step); };
+      if (p < 1) raf = requestAnimationFrame(step); else if (pendingDone) { const d = pendingDone; pendingDone = null; d(); } };
     raf = requestAnimationFrame(step);
   }
   // zoom keeping the point under (x, y) where it is
@@ -732,13 +775,28 @@ const Pin = (() => {
     if (before && isFinite(before[0]) && Math.hypot(x - W / 2, y - H / 2) < R()) { const after = proj.invert([x, y]); if (after && isFinite(after[0])) { view.rot[0] += after[0] - before[0]; view.rot[1] += after[1] - before[1]; clampView(); } }
     redraw();
   }
-  function reveal(anim) {
+  function reveal(anim, cb) {
     const f = featById.get(byCode.get(L.code).g), cl = GK.cluster(L.code), c = cl ? cl.center : G.geoCentroid(f);
     const target = L.at || c, mid = L.pin ? G.geoInterpolate(L.pin, target)(.5) : c;
     const b = G.geoBounds(cl ? cl.geom : f), size = Math.max(G.geoDistance(b[0], b[1]) / 2, .004);
     const a = Math.min(Math.PI / 2, Math.max(size * 1.4, L.pin ? G.geoDistance(L.pin, target) / 2 + size * .4 : 0, .012));
-    const k = Math.min(KMAX, Math.max(1, .40 / Math.sin(a) * Math.min(W, H) / 2 / R0));
-    const t = {rot: [-mid[0], -mid[1]], k}; anim ? animateTo(t, 1300) : (Object.assign(view, t), clampView(), draw());
+    const k = Math.min(KMAX, Math.max(1, .34 / Math.sin(a) * Math.min(W, H) / 2 / R0));
+    const t = {rot: [-mid[0], -mid[1]], k}; anim ? animateTo(t, anim === 'fast' ? 750 : 1300, cb) : (Object.assign(view, t), clampView(), draw(), cb && cb());
+  }
+  // lock in: the globe turns to show both points, a plane flies the route as the distance counts up, then the country lights up and the stamp lands
+  function fly(l, factor, land) {
+    L = l; fx.flying = true; const inside = L.km === 0, ms = inside ? 0 : Math.round(Math.min(1900, 900 + L.km / 6));
+    const verdict = inside ? ['Bullseye!', colors.gold] : L.km <= 100 ? ['So close', colors.hit] : factor >= .5 ? ['Nice flying', colors.hit] : L.km <= 1500 ? ['Off course', colors.accent] : ['Long-haul', colors.accent];
+    const arrive = () => { fx.fly = null; fx.flying = false; fx.land = performance.now(); fx.kmUntil = performance.now() + (inside ? 0 : 1800);
+      fx.label = {text: verdict[0], c: verdict[1], t0: performance.now(), until: performance.now() + 2200};
+      if (inside) { const t = performance.now(); fx.spin = t; [0, 140, 280].forEach((d, i) => fx.rings.push({t0: t + d, ms: 900, r: 60 + i * 18, w: 3, c: colors.gold})); }
+      land(); fxRun(2300); };
+    if (calmFx()) { reveal(false); fx.km = L.km; arrive(); return; }
+    reveal('fast', () => {
+      if (inside) { arrive(); return; }
+      FX.sfx.whoosh(); fx.km = 0; fx.kmUntil = Infinity; fx.fly = {t: 0}; const t0 = performance.now(), ease = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+      const step = now => { const p = Math.min(1, (now - t0) / ms); fx.fly.t = ease(p); fx.km = L.km * fx.fly.t; FX.sfx.tick(); draw(); if (p < 1) requestAnimationFrame(step); else arrive(); };
+      requestAnimationFrame(step); });
   }
   function resize() { const r = canvas.getBoundingClientRect(); if (!r.width) return; stopAll(); DPR = Math.min(devicePixelRatio || 1, 2.5); W = r.width; H = r.height; canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR); R0 = Math.min(W, H) / 2 - 16; if (L && L.done) reveal(false); else draw(); }
   new ResizeObserver(resize).observe(canvas);
@@ -767,10 +825,10 @@ const Pin = (() => {
   canvas.addEventListener('wheel', e => { e.preventDefault(); stopAll(); const p = pos(e); zoomAt(Math.exp(-e.deltaY * .0022), p.x, p.y); }, {passive: false});
   $('zIn').onclick = () => { stopAll(); zoomAt(2, W / 2, H / 2); }; $('zOut').onclick = () => { stopAll(); zoomAt(.5, W / 2, H / 2); };
   $('zReset').onclick = () => animateTo({rot: L && L.pin ? [-L.pin[0], -L.pin[1]] : view.rot.slice(), k: 1}, 600);
-  function place(x, y) { if (!L || L.done) return; apply(); if (Math.hypot(x - W / 2, y - H / 2) > R()) return; const ll = proj.invert([x, y]); if (!ll || !isFinite(ll[0]) || G.geoDistance(ll, center()) > Math.PI / 2) return; L.pin = ll; save(); draw(); render(); }
+  function place(x, y) { if (!L || L.done || fx.flying) return; apply(); if (Math.hypot(x - W / 2, y - H / 2) > R()) return; const ll = proj.invert([x, y]); if (!ll || !isFinite(ll[0]) || G.geoDistance(ll, center()) > Math.PI / 2) return; L.pin = ll; save(); dropFx(); draw(); render(); }
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { colors = globeColors(); draw(); });
-  return {state: () => ({rot: view.rot.slice(), k: view.k}), use(l, fresh) { L = l; if (fresh) { stopAll(); view = {rot: HOME.slice(), k: 1}; } if (W) { if (L.done) reveal(false); else draw(); } }, reveal, draw, resize,
-    placeLL(lon, lat) { L && !L.done && (L.pin = [lon, lat], save(), draw(), render()); }};
+  return {fly, flying: () => !!fx.flying, state: () => ({rot: view.rot.slice(), k: view.k}), use(l, fresh) { L = l; if (fresh) { stopAll(); view = {rot: HOME.slice(), k: 1}; fx.fly = null; fx.flying = false; fx.label = null; fx.kmUntil = 0; fx.land = 0; fx.drop = 0; fx.spin = 0; fx.rings = []; } if (W) { if (L.done) reveal(false); else draw(); } }, reveal, draw, resize,
+    placeLL(lon, lat) { L && !L.done && !fx.flying && (L.pin = [lon, lat], save(), dropFx(), draw(), render()); }};
 })();
 
 /* ---------- rendering ---------- */
@@ -939,9 +997,10 @@ $('capForm').addEventListener('submit', e => { e.preventDefault(); const v = $('
 $('bLock').onclick = () => {
   const L = lvl(); if (!L.pin || L.done) return;
   const inside = G.geoContains(featById.get(byCode.get(L.code).g), L.pin), gap = inside ? {km: 0, at: null} : pointGapKm(L.pin, L.code);
-  L.km = gap.km; L.at = gap.at;
-  finish(L, pinFactor(gap.km, L.code), gap.km <= 300 ? L.code : null);
-  Pin.reveal(true);
+  L.km = gap.km; L.at = gap.at; save();
+  if (Pin.flying()) return;
+  const factor = pinFactor(gap.km, L.code); $('bLock').disabled = true; $('bLock').textContent = gap.km ? 'In flight…' : 'Checking…';
+  Pin.fly(L, factor, () => { $('bLock').textContent = 'Lock in my pin'; finish(L, factor, gap.km <= 300 ? L.code : null); });
 };
 
 /* ================= private leagues: your group chat's own table ================= */
