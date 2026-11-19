@@ -94,7 +94,7 @@ $('go').onclick = async () => {
       } catch (e) { add('bad', 'Leagues check failed', 'Retest in a moment.'); }
       try {
         const r = await timeout(fetch(url + '/rest/v1/passport_saves?select=user_id&limit=1', {headers: H}));
-        r.ok ? add('ok', 'Account storage is installed') : add('bad', 'Account storage missing (' + r.status + ')', 'Run the latest <code>passport.sql</code> again. It adds the <code>passport_saves</code> table.');
+        (r.ok || r.status === 401 || r.status === 403) ? add('ok', 'Account storage is installed', r.ok ? '' : 'Locked to signed-in players, as it should be.') : add('bad', 'Account storage missing (' + r.status + ')', 'Run the latest <code>passport.sql</code> again. It adds the <code>passport_saves</code> table.');
       } catch (e) { add('bad', 'Account storage check failed', 'Retest in a moment.'); }
       try {
         const r = await timeout(fetch(url + '/auth/v1/settings', {headers: H}));
@@ -103,7 +103,7 @@ $('go').onclick = async () => {
         else add('warn', 'Email sign-in looks switched off', 'Authentication → Sign In / Providers → Email: turn it on. Accounts won’t work until it is (the game still works without them).');
       } catch (e) { add('warn', 'Couldn’t check the sign-in settings', 'Check that Authentication → Providers → Email is on.'); }
       add('warn', 'Two manual checks for accounts',
-        '1. Authentication → URL Configuration: set <b>Site URL</b> to <code>' + esc(location.origin + location.pathname.replace(/setup\.html$/, '')) + '</code> and add it to Redirect URLs.<br>' +
+        '1. Authentication → URL Configuration: set <b>Site URL</b> to <code>' + esc(location.protocol === 'file:' ? 'https://alexashton1.github.io/passport/' : location.origin + location.pathname.replace(/setup\.html$/, '')) + '</code> and add it to Redirect URLs.<br>' +
         '2. Authentication → SMTP: connect your own sender (e.g. Resend). Supabase’s built-in email only reaches your own Supabase team, a couple of times an hour.<br>' +
         'Optional: in Authentication → Email Templates → Magic Link, add <code>{{ .Token }}</code> so the email also shows a 6-digit code. It helps players who added the game to their home screen.');
     }
