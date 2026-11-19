@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Passport — connect Supabase</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+.x{}:root{--bg:#F3EEE4;--surface:#FBF8F2;--surface2:#EDE6D9;--ink:#14212D;--ink2:#3A4652;--muted:#79818A;--line:#DDD5C6;--ok:#2E8A66;--bad:#C8553D;--warn:#B7841F}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:28px 18px 60px}
+h1{font:700 30px Georgia,serif;letter-spacing:-.02em;margin:0 0 4px}
+h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
+p{color:var(--ink2);margin:6px 0}
+label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+input{width:100%;height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font:15px ui-monospace,Menlo,monospace;padding:0 12px;color:var(--ink)}
+input:focus{outline:none;border-color:var(--ink)}
+.hint{font-size:13px;color:var(--muted)}
+button{height:48px;border-radius:13px;border:0;background:#7A2E3B;color:var(--bg);font-weight:700;font-size:15px;padding:0 20px;margin-top:16px;cursor:pointer}
+button.sec{background:var(--surface);color:var(--ink);border:1.5px solid var(--line)}
+ol.checks{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+ol.checks li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:24px 1fr;gap:8px}
+ol.checks li b{display:block}
+ol.checks li span.fix{font-size:13px;color:var(--ink2)}
+.i-ok{color:var(--ok)}.i-bad{color:var(--bad)}.i-warn{color:var(--warn)}
+pre{background:var(--ink);color:#EEE7DA;border-radius:12px;padding:14px;overflow:auto;font-size:13px;line-height:1.5}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+code{background:var(--surface2);padding:1px 5px;border-radius:5px;font-size:13px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Connect Supabase</h1>
+  <p>For <b>Passport</b>. Paste in your two Supabase values. This page tests each part of the connection, then gives you a ready-made <code>config.js</code> to upload. Nothing you type here is sent anywhere except your own Supabase project.</p>
+
+  <label for="url">Project URL</label>
+  <input id="url" placeholder="https://abcdefghijklmnop.supabase.co" spellcheck="false" autocomplete="off">
+  <div class="hint">Supabase → Project Settings → Data API (or the Connect button at the top of your project).</div>
+
+  <label for="key">Publishable key</label>
+  <input id="key" placeholder="sb_publishable_…" spellcheck="false" autocomplete="off">
+  <div class="hint">Supabase → Project Settings → API Keys. Never use the secret key here.</div>
+
+  <label for="launch">Launch date (puzzle No. 1, UTC)</label>
+  <input id="launch" type="date">
+
+  <button id="go">Test connection</button>
+
+  <div id="out"></div>
+</main>
+<script src="config.js"></script>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const C = window.PASSPORT_CONFIG || {};
+$('url').value = C.supabaseUrl || ''; $('key').value = C.supabaseKey || ''; $('launch').value = C.launchDate || '2026-11-19';
+const esc = s => String(s).replace(/[&<>"]/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'})[m]);
+const timeout = (p, ms = 8000) => Promise.race([p, new Promise((_, r) => setTimeout(() => r(new Error('timed out')), ms))]);
+
+$('go').onclick = async () => {
+  const url = $('url').value.trim().replace(/\/+$/, ''), key = $('key').value.trim(), launch = $('launch').value;
+  const checks = [];
+  const add = (state, title, fix) => checks.push({state, title, fix});
+  const show = () => {
+    const icon = {ok: '✓', bad: '✕', warn: '!'};
+    $('out').innerHTML = '<h2>Results</h2><ol class="checks">' + checks.map(c => '<li><span class="i-' + c.state + '">' + icon[c.state] + '</span><span><b>' + esc(c.title) + '</b>' + (c.fix ? '<span class="fix">' + c.fix + '</span>' : '') + '</span></li>').join('') + '</ol>';
+  };
+  $('go').disabled = true; $('go').textContent = 'Testing…';
+  const H = {'apikey': key, 'Content-Type': 'application/json', ...(key.startsWith('eyJ') ? {'Authorization': 'Bearer ' + key} : {})};
+
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)) add('bad', 'Project URL format', 'It should look like <code>https://abcdefghijklmnop.supabase.co</code>, with nothing after <code>.co</code>.');
+  else add('ok', 'Project URL format');
+  if (key.startsWith('sb_secret_')) add('bad', 'That’s the SECRET key', 'Never put the secret key in a website. Copy the <b>publishable</b> key (starts <code>sb_publishable_</code>) instead, and consider rotating the secret key.');
+  else if (!(key.startsWith('sb_publishable_') || key.startsWith('eyJ'))) add('bad', 'Key format', 'Copy the publishable key. It starts <code>sb_publishable_</code>.');
+  else add('ok', 'Key format' + (key.startsWith('eyJ') ? ' (legacy anon key: works, but switch to the publishable key before the end of 2026)' : ''));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(launch)) add('bad', 'Launch date', 'Pick the day puzzle No. 1 goes live.');
+
+  if (!checks.some(c => c.state === 'bad')) {
+    const rpc = (fn, body) => timeout(fetch(url + '/rest/v1/rpc/' + fn, {method: 'POST', headers: H, body: JSON.stringify(body)}));
+    try {
+      const r = await rpc('passport_rank', {d: 1, s: 500});
+      if (r.ok) add('ok', 'Reached your project · daily scoreboard is installed');
+      else if (r.status === 401 || r.status === 403) add('bad', 'Key rejected (' + r.status + ')', 'The key doesn’t match this project. Copy it again from the same project as the URL.');
+      else if (r.status === 404) add('bad', 'Scoreboard not installed', 'Open SQL Editor, paste in all of <code>passport.sql</code> and click Run.');
+      else add('bad', 'Unexpected reply (' + r.status + ')', 'Run <code>passport.sql</code> again, then retest.');
+    } catch (e) { add('bad', 'Couldn’t reach the project', 'Check the URL. If the project was paused for inactivity, restore it from the Supabase dashboard.'); }
+
+    if (checks[checks.length - 1].state === 'ok') {
+      try {
+        const r = await rpc('passport_league_board', {c: 'AAAAAA', me: '00000000-0000-4000-8000-000000000000', d0: 1, d1: 1});
+        r.ok ? add('ok', 'Leagues are installed') : add('bad', 'Leagues not installed (' + r.status + ')', 'Run the latest <code>passport.sql</code> again. It’s safe to re-run.');
+      } catch (e) { add('bad', 'Leagues check failed', 'Retest in a moment.'); }
+      try {
+        const r = await timeout(fetch(url + '/rest/v1/passport_saves?select=user_id&limit=1', {headers: H}));
+        r.ok ? add('ok', 'Account storage is installed') : add('bad', 'Account storage missing (' + r.status + ')', 'Run the latest <code>passport.sql</code> again. It adds the <code>passport_saves</code> table.');
+      } catch (e) { add('bad', 'Account storage check failed', 'Retest in a moment.'); }
+      try {
+        const r = await timeout(fetch(url + '/auth/v1/settings', {headers: H}));
+        const s = r.ok ? await r.json() : null;
+        if (s && s.external && s.external.email) add('ok', 'Email sign-in is switched on');
+        else add('warn', 'Email sign-in looks switched off', 'Authentication → Sign In / Providers → Email: turn it on. Accounts won’t work until it is (the game still works without them).');
+      } catch (e) { add('warn', 'Couldn’t check the sign-in settings', 'Check that Authentication → Providers → Email is on.'); }
+      add('warn', 'Two manual checks for accounts',
+        '1. Authentication → URL Configuration: set <b>Site URL</b> to <code>' + esc(location.origin + location.pathname.replace(/setup\.html$/, '')) + '</code> and add it to Redirect URLs.<br>' +
+        '2. Authentication → SMTP: connect your own sender (e.g. Resend). Supabase’s built-in email only reaches your own Supabase team, a couple of times an hour.<br>' +
+        'Optional: in Authentication → Email Templates → Magic Link, add <code>{{ .Token }}</code> so the email also shows a 6-digit code. It helps players who added the game to their home screen.');
+    }
+  }
+  show();
+  const ok = !checks.some(c => c.state === 'bad');
+  const cfg = "window.PASSPORT_CONFIG = {\n  supabaseUrl: '" + url + "',\n  supabaseKey: '" + key.replace(/'/g, '') + "',\n  launchDate: '" + launch + "',\n  accounts: true,\n  prototype: false\n};\n";
+  $('out').insertAdjacentHTML('beforeend', '<h2>' + (ok ? 'Your config.js' : 'Fix the ✕ items, then test again') + '</h2>' + (ok ?
+    '<p>Replace <code>config.js</code> in your GitHub repo with this. On GitHub: open the file → pencil icon → paste → Commit.</p><pre id="cfg">' + esc(cfg) + '</pre>' +
+    '<button id="copy">Copy</button> <button class="sec" id="dl">Download config.js</button>' +
+    '<p class="hint" style="margin-top:12px">After you commit, open the game and go to Settings → Account. It should offer “Save your passport”, and Leagues should let you create one.</p>' : ''));
+  if (ok) {
+    $('copy').onclick = () => navigator.clipboard.writeText(cfg).then(() => $('copy').textContent = 'Copied ✓');
+    $('dl').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([cfg], {type: 'text/javascript'})); a.download = 'config.js'; a.click(); };
+  }
+  $('go').disabled = false; $('go').textContent = 'Test again';
+};
+})();
+</script>
+</body>
+</html>
