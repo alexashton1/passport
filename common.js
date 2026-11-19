@@ -176,11 +176,15 @@ window.GK = (() => {
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
     del(k) { try { localStorage.removeItem(k); } catch (e) {} },
   };
-  function toast(m) { let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); } t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1900); }
-  function copy(text) {
-    const ok = () => toast('Copied — paste it in your group chat');
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, () => fallback()); else fallback();
-    function fallback() { const t = document.createElement('textarea'); t.value = text; t.style.position = 'fixed'; t.style.opacity = 0; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); ok(); } catch (e) { toast('Copy failed'); } t.remove(); }
+  // the top layer: messages shown while a dialog is open must live inside it, or they sit hidden behind it
+  const layer = () => [...document.querySelectorAll('dialog[open]')].pop() || document.body;
+  function toast(m) { let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); } if (t.parentNode !== layer()) layer().appendChild(t); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2200); }
+  // resolves true if the text reached the clipboard
+  function copy(text, quiet) {
+    const done = ok => { if (!quiet) toast(ok ? 'Copied. Paste it in your group chat' : 'Couldn’t copy here. Press and hold the text to copy it'); return ok; };
+    const fallback = () => { const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px'; layer().appendChild(t); t.focus(); t.select(); t.setSelectionRange(0, text.length); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} t.remove(); return ok; };
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext !== false) return navigator.clipboard.writeText(text).then(() => done(true), () => done(fallback()));
+    return Promise.resolve(done(fallback()));
   }
   function openDlg(d) { document.querySelectorAll('dialog[open]').forEach(x => x.close()); d.showModal ? d.showModal() : d.setAttribute('open', ''); }
   document.addEventListener('click', e => { const d = e.target.closest('dialog'); if (d && (e.target === d || e.target.closest('[data-close]'))) d.close(); });
