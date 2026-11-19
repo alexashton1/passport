@@ -1,7 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-//  Passport settings: the only file you need to edit.
-//  Open setup.html on your site to test your Supabase details and generate this file for you.
-// ─────────────────────────────────────────────────────────────
 window.PASSPORT_CONFIG = {
   supabaseUrl: 'https://lbyopdjqagwqrwulztov.supabase.co',
   supabaseKey: 'sb_publishable_j5TK1cW1BLwyacEJgKt3rg_LEkZbacK',
@@ -9,4 +5,3 @@ window.PASSPORT_CONFIG = {
   accounts: true,
   prototype: false
 };
-
