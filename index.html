@@ -185,6 +185,7 @@
 .lnudge b{display:block;font-size:15px}.lnudge span{font-size:13px;color:var(--ink2)}.lnudge .btn{height:42px;font-size:14px;flex:none}
 .pass-league{margin:4px 14px 0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--near) 18%,var(--bg));font-size:13.5px;line-height:1.4;animation:stopin .5s both}
 .live .js-proto{display:none!important}
+.sharebox{-webkit-user-select:text;user-select:text}
 
 /* ---- v4: drawn icons, inked stamps, flight route ---- */
 .ico{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em;flex:none}
@@ -322,9 +323,9 @@
     <div class="msg" id="lgMsg" role="status"></div>
     <div id="lgList"></div>
     <h3>Your name in leagues</h3>
-    <input class="tin" id="lgName" maxlength="20" placeholder="e.g. Alex" autocomplete="nickname">
+    <input class="tin" id="lgName" maxlength="20" placeholder="e.g. Christopher Columbus" autocomplete="nickname">
     <div class="lgbox" id="lgJoinBox"><h3>Join a league</h3><div class="field"><input class="tin" id="lgCode" maxlength="6" placeholder="6-letter code" autocapitalize="characters" spellcheck="false"><button class="btn" id="lgJoin" type="button">Join</button></div></div>
-    <div class="lgbox"><h3 id="lgStartHead">Start a league</h3><div class="field"><input class="tin" id="lgNew" maxlength="30" placeholder="League name, e.g. The Ashtons"><button class="btn accent" id="lgCreate" type="button">Create</button></div></div>
+    <div class="lgbox"><h3 id="lgStartHead">Start a league</h3><div class="field"><input class="tin" id="lgNew" maxlength="30" placeholder="League name, e.g. Magellan’s Crew"><button class="btn accent" id="lgCreate" type="button">Create</button></div></div>
   </div>
 </div></dialog>
 <dialog id="dRes"></dialog>
@@ -991,7 +992,9 @@ const League = {
 };
 
 let invite = null;
-async function openLeagues(msg, focus) {
+const EXPLORERS = [['Christopher Columbus', 'Magellan’s Crew'], ['Marco Polo', 'The Silk Road Club'], ['Ibn Battuta', 'The Endeavour'], ['Amelia Earhart', 'Shackleton’s Sledgers'], ['Gertrude Bell', 'The Royal Geographers'], ['Zheng He', 'Treasure Fleet'], ['Freya Stark', 'Darwin’s Beagle'], ['Roald Amundsen', 'The Lewis & Clark Society']];
+function explorerHints() { const [n, l] = EXPLORERS[Math.floor(Math.random() * EXPLORERS.length)]; if ($('lgName')) $('lgName').placeholder = 'e.g. ' + n; if ($('lgNew')) $('lgNew').placeholder = 'League name, e.g. ' + l; }
+async function openLeagues(msg, focus) { explorerHints();
   openDlg($('dLeague'));
   const b = await backend(), ok = b && (b.kind === 'supabase' || b.uid);
   $('lgOffline').hidden = !!ok; $('lgForms').hidden = !ok;
@@ -1006,7 +1009,7 @@ function needName() { const n = cleanName($('lgName').value, 20); if (!n) { lgMs
 const lgBusy = on => { $('lgCreate').disabled = $('lgJoin').disabled = on; };
 $('lgCreate').onclick = async () => {
   const me = needName(); if (!me) return; const name = cleanName($('lgNew').value, 30);
-  if (!name) { lgMsg('Give your league a name, e.g. “The Ashtons”.', true); $('lgNew').focus(); return; }
+  if (!name) { lgMsg('Give your league a name, e.g. “Magellan’s Crew”.', true); $('lgNew').focus(); return; }
   lgBusy(true);
   try { const code = await League.create(name, me); myLeagues().unshift({code, name}); persist(); $('lgNew').value = ''; lgMsg('League created. Now invite your group chat below.'); FX.sfx.stamp(); renderLeagues(code); }
   catch (e) { lgMsg(e.message === 'signin' ? 'Sign in to Claude to create leagues here.' : 'Couldn’t create the league just now. Try again in a moment.', true); }
@@ -1114,6 +1117,9 @@ function showBoarding() {
 
 /* ================= results: stamp the page, count it up, level up ================= */
 const QUAL = {hit: 'Perfect', near: 'Good', mid: 'Close', far: 'Missed'};
+// phones get the native share sheet (WhatsApp, Messages...); computers copy
+const canShare = () => !!navigator.share && matchMedia('(pointer: coarse)').matches;
+function selectShareBox() { const el = document.querySelector('#dRes .sharebox'); if (!el) return; const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); el.scrollIntoView({block: 'nearest'}); }
 async function showResults() {
   const t = total(), stamps = S.levels.filter(stamped).length, verdict = pun(t, S.day), st = streak(), n = Object.keys(P.book).length;
   const xpAfter = xpTotal(), xpBefore = xpAfter - t, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
@@ -1131,10 +1137,12 @@ async function showResults() {
     '<div id="resLeague"></div>' +
     '<div class="js-acct" data-where="results"></div>' +
     '<h3>Share</h3><pre class="sharebox">' + esc(shareLines.join('\n')) + '</pre>' +
-    '<div class="row"><button class="btn accent" id="rsCopy">Copy result</button>' + (PROTO ? '<button class="btn ghost" id="rsReplay">Replay (prototype)</button>' : '') + '</div>' +
+    '<div class="row">' + (canShare() ? '<button class="btn accent" id="rsShare">Share result</button><button class="btn ghost" id="rsCopy">Copy</button>' : '<button class="btn accent" id="rsCopy">Copy result</button>') + (PROTO ? '<button class="btn ghost" id="rsReplay">Replay (prototype)</button>' : '') + '</div>' +
     '<div class="cd">Next flight in<b class="js-cd">--:--:--</b></div></div>';
   openDlg($('dRes')); renderAll();
-  $('rsCopy').onclick = () => GK.copy(shareLines.join('\n') + '\n' + location.href.split('#')[0]);
+  const shareText = () => shareLines.join('\n') + '\n' + location.href.split('#')[0];
+  $('rsCopy').onclick = async e => { const b = e.currentTarget, label = b.textContent, ok = await GK.copy(shareText()); if (ok) { b.textContent = 'Copied ✓'; setTimeout(() => { b.textContent = label; }, 2200); } else selectShareBox(); };
+  if ($('rsShare')) $('rsShare').onclick = async () => { try { await navigator.share({text: shareText()}); } catch (err) { if (err && err.name !== 'AbortError') { const ok = await GK.copy(shareText()); if (!ok) selectShareBox(); } } };
   if ($('rsReplay')) $('rsReplay').onclick = () => { $('dRes').close(); delete P.games[S.day]; fresh(); lastIdx = -1; render(false); };
   // global rank (if a scoreboard is connected)
   (async () => { await submitScore(S.day, t); leagueSummary(); let r = null; try { r = await fetchRank(S.day, t); } catch (e) {} if (!r || !$('resGlobal')) return;
