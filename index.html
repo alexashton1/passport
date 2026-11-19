@@ -186,6 +186,7 @@
 .pass-league{margin:4px 14px 0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--near) 18%,var(--bg));font-size:13.5px;line-height:1.4;animation:stopin .5s both}
 .live .js-proto{display:none!important}
 .sharebox{-webkit-user-select:text;user-select:text}
+.share-row{margin:12px 0 18px}.share-row .btn{flex:1;min-height:52px;font-size:17px}.share-row .btn.ghost{flex:0 0 auto;padding-left:22px;padding-right:22px}.share-row.hide{opacity:0;pointer-events:none}.share-row{transition:opacity .4s}
 .legal{text-align:center;margin:12px 0 0}.legal a,.fine a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
 /* ---- v4: drawn icons, inked stamps, flight route ---- */
@@ -405,6 +406,10 @@ const Account = (() => {
         await withTimeout(loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'), 10000);
         sb = window.supabase.createClient(SB.url, SB.key, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit', storageKey: 'passport-auth'}});
         kind = 'supabase';
+        // the sign-in email links back to our own domain (?token_hash=...), never to a supabase.co address
+        const q = new URLSearchParams(location.search), th = q.get('token_hash');
+        if (th) { history.replaceState(null, '', location.pathname + location.hash);
+          const t = q.get('type'), {error} = await sb.auth.verifyOtp({token_hash: th, type: ['signup', 'magiclink', 'email'].includes(t) ? t : 'email'}); if (error) setTimeout(() => toast('That sign-in link has expired. Ask for a new one.'), 600); }
         const {data} = await sb.auth.getSession(); session = data && data.session;
         sb.auth.onAuthStateChange((ev, s) => { const was = !!session; session = s; if (s && !was) pull().then(() => { toast('Passport saved to your account ✓'); FX.sfx.right(); }); renderAll(); });
         if (session) await pull();
@@ -1121,11 +1126,15 @@ function showBoarding() {
 const QUAL = {hit: 'Perfect', near: 'Good', mid: 'Close', far: 'Missed'};
 // phones get the native share sheet (WhatsApp, Messages...); computers copy
 const canShare = () => !!navigator.share && matchMedia('(pointer: coarse)').matches;
-function selectShareBox() { const el = document.querySelector('#dRes .sharebox'); if (!el) return; const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); el.scrollIntoView({block: 'nearest'}); }
+// the bare address reads cleanly in chats, and WhatsApp/iMessage still turn it into a link
+const shareUrl = () => location.protocol === 'file:' ? location.href.split('#')[0] : (location.host + location.pathname).replace(/\/(index\.html)?$/, '');
+function selectShareBox() { const el = document.querySelector('#dRes .sharebox'); if (!el) return; el.hidden = false; const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); el.scrollIntoView({block: 'nearest'}); }
 async function showResults() {
   const t = total(), stamps = S.levels.filter(stamped).length, verdict = pun(t, S.day), st = streak(), n = Object.keys(P.book).length;
   const xpAfter = xpTotal(), xpBefore = xpAfter - t, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
-  const shareLines = ['✈️ Passport No. ' + S.day + ' · ' + t + '/1000' + (S.levels.some(expertFor) ? ' · 🎓' : ''), S.levels.map(l => EMO[clsFor(l.pts, l.max)]).join('') + '  Visited ' + stamps + ' of 5', rA.icon + ' ' + rA.name + ' · 📘 ' + n + '/195' + (st > 1 ? ' · 🔥' + st : ''), '“' + verdict + '”'];
+  // what gets copied: four short lines, spoiler-free
+  const KIND_EMO = {outline: '🗺️', flag: '🏳️', capital: '🏛️', whose: '❓', borders: '🧭', odd: '🧩', bigger: '⚖️', pin: '📍'};
+  const shareLines = ['Passport No. ' + S.day + ' ✈️ ' + t + '/1000' + (S.levels.some(expertFor) ? ' 🎓' : ''), S.levels.map(l => KIND_EMO[l.kind] + EMO[clsFor(l.pts, l.max)]).join(' ')].concat(st > 1 ? ['🔥 ' + st + '-day streak'] : []);
   const subj = l => l.kind === 'bigger' ? 'Five head-to-heads' : l.kind === 'odd' ? byCode.get(l.subject).n : byCode.get(l.code).n;
   $('dRes').innerHTML = '<div class="sheet res" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
     '<div class="res-kicker">Passport No. ' + S.day + ' · ' + esc(fmtDate()) + '</div>' +
@@ -1133,16 +1142,17 @@ async function showResults() {
     '<ul class="res-lines">' + S.levels.map(l => '<li><span>' + ICON[l.kind] + ' ' + esc(GAMES[l.kind].name) + ' <small>· ' + esc(subj(l)) + (l.hint ? ' · hint' : '') + '</small></span><b>' + l.pts + '<small>/' + l.max + '</small></b></li>').join('') + '</ul>' +
     '<div class="tot"><b id="resTotal">' + (animate ? 0 : t) + '</b><small>/ 1000</small></div>' +
     '<div class="pun' + (animate ? ' hide' : '') + '" id="resPun">' + esc(verdict) + '</div>' +
+    '<div class="row share-row' + (animate ? ' hide' : '') + '" id="resShare">' + (canShare() ? '<button class="btn accent" id="rsShare">Share result</button><button class="btn ghost" id="rsCopy">Copy</button>' : '<button class="btn accent" id="rsCopy">Copy result</button>') + '</div>' +
+    '<pre class="sharebox" hidden>' + esc(shareLines.join('\n') + '\n' + shareUrl()) + '</pre>' +
     '<div class="rank" id="resRank"><div class="rk-top"><span class="rk-icon" id="rkIcon">' + (animate ? rB.svg : rA.svg) + '</span><div><small>Traveller rank</small><b id="rkName">' + (animate ? rB.name : rA.name) + '</b></div><span class="rk-xp">+' + t.toLocaleString() + ' XP</span></div>' +
     '<div class="xpbar"><i id="xpFill" style="width:' + pctIn(animate ? xpBefore : xpAfter, animate ? rB : rA) + '%"></i></div><div class="rk-next" id="rkNext">' + nextLine(xpAfter, rA) + '</div></div>' +
     '<div class="res-global" id="resGlobal"></div>' +
     '<div id="resLeague"></div>' +
     '<div class="js-acct" data-where="results"></div>' +
-    '<h3>Share</h3><pre class="sharebox">' + esc(shareLines.join('\n')) + '</pre>' +
-    '<div class="row">' + (canShare() ? '<button class="btn accent" id="rsShare">Share result</button><button class="btn ghost" id="rsCopy">Copy</button>' : '<button class="btn accent" id="rsCopy">Copy result</button>') + (PROTO ? '<button class="btn ghost" id="rsReplay">Replay (prototype)</button>' : '') + '</div>' +
+    (PROTO ? '<div class="row"><button class="btn ghost" id="rsReplay">Replay (prototype)</button></div>' : '') +
     '<div class="cd">Next flight in<b class="js-cd">--:--:--</b></div></div>';
   openDlg($('dRes')); renderAll();
-  const shareText = () => shareLines.join('\n') + '\n' + location.href.split('#')[0];
+  const shareText = () => shareLines.join('\n') + '\n' + shareUrl();
   $('rsCopy').onclick = async e => { const b = e.currentTarget, label = b.textContent, ok = await GK.copy(shareText()); if (ok) { b.textContent = 'Copied ✓'; setTimeout(() => { b.textContent = label; }, 2200); } else selectShareBox(); };
   if ($('rsShare')) $('rsShare').onclick = async () => { try { await navigator.share({text: shareText()}); } catch (err) { if (err && err.name !== 'AbortError') { const ok = await GK.copy(shareText()); if (!ok) selectShareBox(); } } };
   if ($('rsReplay')) $('rsReplay').onclick = () => { $('dRes').close(); delete P.games[S.day]; fresh(); lastIdx = -1; render(false); };
@@ -1159,7 +1169,7 @@ async function showResults() {
   const inks = [...document.querySelectorAll('.page .ink')]; let run = 0;
   inks.forEach((el, i) => setTimeout(() => { el.classList.add('in'); FX.sfx.stamp(); const pts = S.levels[i].pts; FX.countUp($('resTotal'), run, run + pts, 360, false); run += pts; }, 350 + i * 430));
   const end = 350 + inks.length * 430 + 250;
-  setTimeout(() => { $('resPun').classList.remove('hide'); if (t >= 850) FX.confetti(120); if (t >= 700) FX.sfx.right(); }, end);
+  setTimeout(() => { $('resPun').classList.remove('hide'); $('resShare').classList.remove('hide'); if (t >= 850) FX.confetti(120); if (t >= 700) FX.sfx.right(); }, end);
   setTimeout(() => {
     if (rA.i > rB.i) { $('xpFill').style.width = '100%'; setTimeout(() => { $('rkIcon').innerHTML = rA.svg; $('rkName').textContent = rA.name; $('resRank').classList.add('up'); $('xpFill').style.transition = 'none'; $('xpFill').style.width = '0%'; void $('xpFill').offsetWidth; $('xpFill').style.transition = ''; $('xpFill').style.width = pctIn(xpAfter, rA) + '%'; FX.sfx.rank(); FX.confetti(140); toast(rA.icon + ' Promoted to ' + rA.name + '!'); }, 700); }
     else $('xpFill').style.width = pctIn(xpAfter, rA) + '%';
