@@ -26,7 +26,7 @@ window.GK = (() => {
   const R = 6371, rad = d => d * Math.PI / 180;
   function distKm(a, b) { const [la1, lo1] = a, [la2, lo2] = b; const h = Math.sin(rad(la2 - la1) / 2) ** 2 + Math.cos(rad(la1)) * Math.cos(rad(la2)) * Math.sin(rad(lo2 - lo1) / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); }
   function bearing(a, b) { const [la1, lo1] = a.map(rad), [la2, lo2] = b.map(rad); const y = Math.sin(lo2 - lo1) * Math.cos(la2), x = Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(lo2 - lo1); return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360; }
-  const ARROWS = ['⬆️', '↗️', '➡️', '↘️', '⬇️', '↙️', '⬅️', '↖️'], DIRS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+  const ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'].map(a => a + '\uFE0E')   // text arrows, not emoji, DIRS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
   const arrow = deg => ARROWS[Math.round(deg / 45) % 8], dirWord = deg => DIRS[Math.round(deg / 45) % 8];
   const fmtKm = km => km < 50 ? '<50 km' : (Math.round(km / 10) * 10).toLocaleString() + ' km';
   const clusterCache = new Map();
