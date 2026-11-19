@@ -1133,8 +1133,10 @@ async function showResults() {
   const t = total(), stamps = S.levels.filter(stamped).length, verdict = pun(t, S.day), st = streak(), n = Object.keys(P.book).length;
   const xpAfter = xpTotal(), xpBefore = xpAfter - t, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
   // what gets copied: four short lines, spoiler-free
-  const KIND_EMO = {outline: '🗺️', flag: '🏳️', capital: '🏛️', whose: '❓', borders: '🧭', odd: '🧩', bigger: '⚖️', pin: '📍'};
-  const shareLines = ['Passport No. ' + S.day + ' ✈️ ' + t + '/1000' + (S.levels.some(expertFor) ? ' 🎓' : ''), S.levels.map(l => KIND_EMO[l.kind] + EMO[clsFor(l.pts, l.max)]).join(' ')].concat(st > 1 ? ['🔥 ' + st + '-day streak'] : []);
+  // MapTap-style: each stamp out of 100 with an emoji for how it went, then the total
+  const tierEmo = pc => pc >= 100 ? '🎯' : pc >= 85 ? '🏆' : pc >= 70 ? '🌟' : pc >= 60 ? '✅' : pc >= 40 ? '🧭' : pc >= 20 ? '🤔' : pc > 0 ? '😬' : '💀';
+  const shortDate = GK.dayDate(S.day).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', timeZone: 'UTC'});
+  const shareLines = ['Passport No. ' + S.day + ' · ' + shortDate, S.levels.map(l => { const pc = Math.round(l.pts / l.max * 100); return pc + tierEmo(pc); }).join(' '), 'Final score: ' + t + (S.levels.some(expertFor) ? ' · Expert' : '')].concat(st > 1 ? ['🔥 ' + st + '-day streak'] : []);
   const subj = l => l.kind === 'bigger' ? 'Five head-to-heads' : l.kind === 'odd' ? byCode.get(l.subject).n : byCode.get(l.code).n;
   $('dRes').innerHTML = '<div class="sheet res" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
     '<div class="res-kicker">Passport No. ' + S.day + ' · ' + esc(fmtDate()) + '</div>' +
