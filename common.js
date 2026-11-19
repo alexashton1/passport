@@ -190,7 +190,7 @@ window.GK = (() => {
   document.addEventListener('click', e => { const d = e.target.closest('dialog'); if (d && (e.target === d || e.target.closest('[data-close]'))) d.close(); });
   const cdText = () => { const ms = msToNext(); return [Math.floor(ms / 36e5), Math.floor(ms % 36e5 / 6e4), Math.floor(ms % 6e4 / 1e3)].map(v => String(v).padStart(2, '0')).join(':'); };
   setInterval(() => document.querySelectorAll('.js-cd').forEach(el => el.textContent = cdText()), 1000);
-  const fmtDate = () => new Date(EPOCH + (dayNum() - 1) * DAY).toLocaleDateString(undefined, {weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'});
+  const fmtDate = () => new Date(EPOCH + (dayNum() - 1) * DAY).toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'});
   const clsFor = (pts, max) => pts >= max * .9 ? 'hit' : pts >= max * .55 ? 'near' : pts > 0 ? 'mid' : 'far';
   const EMO = {hit: '🟩', near: '🟨', mid: '🟧', far: '🟥'};
 
