@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Passport — five geography stamps a day</title>
+<meta name="description" content="Passport is a free daily geography game. Five quick challenges (outlines, flags, capitals, borders, maps), each harder than the last. Fill your passport with all 195 countries.">
+<meta name="theme-color" content="#7A2E3B">
+<meta property="og:title" content="Passport — five geography stamps a day">
+<meta property="og:description" content="Five quick geography challenges a day. Score up to 1,000, collect all 195 countries, and beat your group chat.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://alexashton1.github.io/Wider/">
+<meta property="og:image" content="https://alexashton1.github.io/Wider/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://alexashton1.github.io/Wider/og.png">
+<link rel="canonical" href="https://alexashton1.github.io/Wider/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Passport">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Passport","description":"Free daily geography game: five challenges a day, collect all 195 countries.","genre":["Puzzle","Educational"],"gamePlatform":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+<style>
+[hidden]{display:none!important}
+:root{--accent:#7A2E3B}
+@media (prefers-color-scheme:dark){:root{--accent:#C0606F}}
+.pane{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 16px 16px;text-align:center;gap:10px}
+.pane .k{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pane .q{font-family:var(--serif);font-size:25px;font-weight:600;letter-spacing:-.01em;line-height:1.15;max-width:420px}
+.flagimg{width:min(62%,260px);aspect-ratio:3/2;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.06);background:var(--surface2) center/cover no-repeat}
+.fl{display:inline-block;width:1.45em;height:.97em;border-radius:2px;background:center/cover no-repeat;vertical-align:-.12em;box-shadow:0 0 0 1px rgba(0,0,0,.08);flex:none}
+.nb{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:440px}
+.nb span{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-weight:600;font-size:14px;display:inline-flex;gap:6px;align-items:center}
+.duel{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:420px}
+.duel .side{background:var(--bg);border-radius:16px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:118px;justify-content:center}
+.duel .side b{font-size:16px;line-height:1.2}
+.duel .side .fl{font-size:34px}
+.duel .bar{width:100%;height:8px;border-radius:4px;background:var(--surface2);overflow:hidden}
+.duel .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .6s}
+.duel .area{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-height:15px}
+.rounds{display:flex;gap:6px}.rounds i{width:10px;height:10px;border-radius:50%;background:var(--surface2)}.rounds i.ok{background:var(--hit)}.rounds i.no{background:var(--far)}.rounds i.now{outline:2px solid var(--ink);outline-offset:1px}
+.stamp{position:absolute;right:16px;bottom:96px;transform:rotate(-12deg);border:3px solid var(--accent);color:var(--accent);border-radius:10px;padding:4px 10px;font:800 13px var(--sans);letter-spacing:.12em;text-transform:uppercase;opacity:.9;animation:stamp .35s cubic-bezier(.2,1.6,.4,1);z-index:3;pointer-events:none}
+@keyframes stamp{0%{transform:rotate(-12deg) scale(2.2);opacity:0}100%{transform:rotate(-12deg) scale(1);opacity:.9}}
+.lvtag{position:absolute;left:10px;top:10px;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:5px 10px;border-radius:99px;font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;z-index:4}
+.lvtag b{color:var(--ink)}
+.hintbtn{position:absolute;right:10px;top:8px;z-index:4;height:32px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600;padding:0 12px;box-shadow:var(--shadow)}
+.hintbtn:disabled{opacity:.55}
+.step small{font-size:9.5px;opacity:.8;letter-spacing:0;text-transform:none;font-weight:600}
+.steps .step{font-size:9.5px;height:44px}
+.opts.six{grid-template-columns:1fr 1fr 1fr}
+.opts.six .opt{min-height:48px;font-size:13.5px}
+.opt .fl{margin-right:6px}
+/* pin map */
+#pinWrap{position:absolute;inset:0}
+#pinWrap canvas{cursor:crosshair}
+.find{position:absolute;left:50%;top:44px;transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:99px;padding:7px 14px;font-weight:700;font-size:15px;white-space:nowrap;box-shadow:var(--shadow);display:flex;gap:8px;align-items:center;z-index:3}
+.find small{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+.zoom{position:absolute;right:10px;top:88px;display:flex;flex-direction:column;gap:6px;z-index:3}
+.zoom button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:19px;font-weight:600;box-shadow:var(--shadow);display:grid;place-items:center}
+/* book */
+.bookhead{display:flex;align-items:center;gap:16px;margin:6px 0 4px}
+.ring{width:92px;height:92px;flex:none}
+.bookhead .n{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1}
+.bookhead p{margin:4px 0 0;font-size:13.5px}
+.region{margin-top:16px}
+.region h4{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 6px;font-size:14px}
+.region h4 span{font-size:12px;color:var(--muted);font-weight:600}
+.pbar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin-bottom:8px}.pbar i{display:block;height:100%;background:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:10px;background:var(--bg);font-size:9.5px;line-height:1.15;text-align:center;color:var(--ink2);min-height:58px}
+.tile .fl{font-size:22px}
+.tile.no{opacity:.4}.tile.no .fl{filter:grayscale(1);opacity:.35}
+.tile.new{outline:2px solid var(--accent)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg);border-radius:14px;padding:12px 14px}
+.switch b{display:block;font-size:15px}.switch span{font-size:13px;color:var(--ink2)}
+.tog{width:50px;height:30px;border-radius:99px;border:0;background:var(--surface2);position:relative;flex:none}
+.tog::after{content:'';position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
+.tog[aria-checked="true"]{background:var(--hit)}.tog[aria-checked="true"]::after{left:23px}
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 6px;background:var(--surface2);color:var(--ink2);margin-left:6px;vertical-align:middle}
+/* ---- feel ---- */
+.floatpts{position:fixed;transform:translate(-50%,-50%);font:800 40px var(--serif);color:var(--accent);text-shadow:0 2px 0 var(--surface),0 6px 20px rgba(0,0,0,.18);pointer-events:none;z-index:80;animation:floatup 1.25s cubic-bezier(.2,.8,.3,1) forwards}
+.floatpts.hit{color:var(--hit)}
+@keyframes floatup{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}15%{opacity:1;transform:translate(-50%,-55%) scale(1.15)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-190%) scale(1)}}
+.confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:90}
+.score.bump{animation:bump .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.18)}100%{transform:scale(1)}}
+.stage.flash-ok{animation:flashok .8s}
+.stage.flash-no{animation:flashno .6s}
+@keyframes flashok{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--hit) 70%,transparent)}100%{box-shadow:0 0 0 18px transparent}}
+@keyframes flashno{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.opts.shake{animation:shake .4s}
+.tin{width:100%;height:48px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:500 16px var(--sans);padding:0 14px}
+.tin:focus{outline:none;border-color:var(--ink)}
+.linkbtn{background:none;border:0;color:var(--ink2);text-decoration:underline;font-size:13px;padding:6px 0}
+
+/* ---- boarding pass ---- */
+.boarddlg .sheet{background:transparent;padding:0;box-shadow:none;overflow:visible}
+.pass{background:var(--surface);border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.pass-top{display:flex;justify-content:space-between;background:var(--accent);color:#fff;padding:14px 18px;font:800 12px var(--sans);letter-spacing:.16em}
+.pass-row{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:8px;padding:16px 18px 6px}
+.pass-row small,.pass-foot small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.pass-row b{font-family:var(--serif);font-size:19px;font-weight:600;white-space:nowrap}
+.route{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:16px 12px 8px}
+.route::before{content:'';position:absolute;left:12%;right:12%;top:37px;border-top:2px dashed var(--line)}
+.stop{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;animation:stopin .5s both;animation-delay:var(--d)}
+@keyframes stopin{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
+.stop .si{width:44px;height:44px;border-radius:50%;background:var(--bg);border:2px solid var(--line);display:grid;place-items:center;font-size:20px;position:relative}
+.stop .sn{font-size:11px;font-weight:700;line-height:1.15;min-height:26px}
+.stop .sp{font-size:11px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.pass-note{padding:4px 18px 4px;font-size:14px;line-height:1.5;color:var(--ink2);margin:0}
+.pass-stats{display:flex;justify-content:space-around;padding:8px 14px;font-size:13.5px;color:var(--ink2)}
+.tear{margin:12px 0 0;border-top:2px dashed var(--line);position:relative}
+.tear::before,.tear::after{content:'';position:absolute;top:-12px;width:22px;height:22px;border-radius:50%;background:rgba(8,14,20,.5)}
+.tear::before{left:-11px}.tear::after{right:-11px}
+.pass-foot{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 18px}
+.pass-foot b{font-family:var(--serif);font-size:22px;font-variant-numeric:tabular-nums}
+.barcode{display:flex;gap:2px;height:38px;align-items:stretch}.barcode i{background:var(--ink);display:block}
+.board-go{margin-top:14px;height:56px;font-size:18px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.boarddlg .linkbtn{color:#fff;opacity:.85}
+
+/* ---- results ---- */
+.res{padding-top:26px}
+.res-kicker{text-align:center;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.page{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:16px 0 6px;padding:14px 6px;border-radius:16px;background:repeating-linear-gradient(0deg,transparent 0 22px,color-mix(in srgb,var(--line) 45%,transparent) 22px 23px),var(--bg)}
+.ink{--c:var(--muted);aspect-ratio:1/1;border-radius:50%;border:3px double var(--c);color:var(--c);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(var(--r)) scale(2.4);opacity:0;font-weight:800;text-transform:uppercase;line-height:1.05;padding:2px}
+.ink.in{opacity:.92;transform:rotate(var(--r)) scale(1);transition:transform .28s cubic-bezier(.3,1.7,.5,1),opacity .15s}
+.ink .ik{font-size:15px;filter:saturate(.6)}
+.ink .iname{font-size:7.5px;letter-spacing:.06em}
+.ink b{font-size:14px;font-family:var(--serif);letter-spacing:0}
+.ink .iq{font-size:7px;letter-spacing:.1em}
+.ink.q-hit{--c:var(--hit)}.ink.q-near{--c:#C08A1E}.ink.q-mid{--c:var(--mid)}.ink.q-far{--c:var(--far)}
+.res-lines{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:2px}
+.res-lines li{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:5px 2px;border-bottom:1px solid var(--line)}
+.res-lines li small{color:var(--muted);font-weight:500}
+.res-lines li b{font-variant-numeric:tabular-nums}
+.tot{text-align:center;margin-top:14px}
+.tot b{font-family:var(--serif);font-size:64px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.tot small{font-size:22px;color:var(--muted);margin-left:4px}
+.pun{text-align:center;font-family:var(--serif);font-style:italic;font-weight:600;font-size:20px;color:var(--accent);line-height:1.3;margin:8px auto 0;max-width:330px;transition:opacity .5s,transform .5s}
+.pun.hide{opacity:0;transform:translateY(8px)}
+.rank{margin-top:18px;background:var(--bg);border-radius:16px;padding:12px 14px;transition:box-shadow .4s}
+.rank.up{box-shadow:0 0 0 2px var(--accent)}
+.rk-top{display:flex;align-items:center;gap:10px}
+.rk-icon{font-size:28px;width:44px;height:44px;border-radius:12px;background:var(--surface);display:grid;place-items:center}
+.rk-top small{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.rk-top b{font-family:var(--serif);font-size:20px}
+.rk-xp{margin-left:auto;font-weight:800;color:var(--hit);font-variant-numeric:tabular-nums}
+.xpbar{height:10px;border-radius:5px;background:var(--surface2);overflow:hidden;margin-top:10px}
+.xpbar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#E2A93B));transition:width 1.1s cubic-bezier(.3,.9,.3,1)}
+.rk-next{font-size:12.5px;color:var(--ink2);margin-top:6px}
+.res-global{text-align:center;font-size:14.5px;margin-top:12px;color:var(--ink2);min-height:4px}
+.res-global b{color:var(--ink);font-size:16px}
+.savecard{margin-top:16px;border-radius:18px;padding:16px;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface));border:1.5px solid color-mix(in srgb,var(--accent) 45%,var(--line))}
+.sc-head{font-family:var(--serif);font-size:21px;font-weight:700;margin-bottom:6px}
+.perks{margin:0 0 12px;padding-left:18px;font-size:13.5px;line-height:1.55;color:var(--ink2)}
+.perks b{color:var(--ink)}
+.savecard .field .btn{height:48px;font-size:15px}
+.saved{margin-top:14px;font-size:13.5px;color:var(--ink2);background:color-mix(in srgb,var(--hit) 10%,var(--bg));border-radius:12px;padding:10px 12px;line-height:1.45}
+#dBook .savecard,#dBook .saved{margin:12px 0 4px}
+
+/* ---- leagues ---- */
+#dLeague .field{margin-top:4px}#dLeague .field .btn{height:48px;font-size:15px}
+.lgbox{border-radius:16px;transition:background .3s}.lgbox.hl{background:color-mix(in srgb,var(--near) 18%,transparent);padding:2px 10px 10px;margin:0 -10px}
+.lcard{border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:14px;background:var(--bg)}
+.lcard header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lcard header b{font-family:var(--serif);font-size:20px;font-weight:600}
+.lcode{font:700 12px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;background:var(--surface2);padding:4px 8px;border-radius:8px;color:var(--ink2)}
+.lcard h4{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;display:flex;justify-content:space-between;font-weight:700}
+.lcard h4 span{text-transform:none;letter-spacing:0;font-weight:500}
+.lcard .row .btn{height:42px;font-size:14px}
+.lb{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.lb li{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--surface);font-size:14px}
+.lb li.me{outline:1.5px solid var(--accent)}
+.lb .rk{font-weight:700;color:var(--muted);text-align:center}
+.lb .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lb .nm small{color:var(--muted);font-weight:500}
+.lb .pts{font-weight:800;font-variant-numeric:tabular-nums;font-family:var(--serif);font-size:16px}
+.lsum{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px;color:var(--ink2)}
+.lsum li{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.lsum small{color:var(--muted)}
+.lnudge{display:flex;align-items:center;gap:12px;margin-top:16px;padding:14px;border-radius:16px;background:var(--bg);border:1.5px dashed color-mix(in srgb,var(--accent) 50%,var(--line))}
+.lnudge b{display:block;font-size:15px}.lnudge span{font-size:13px;color:var(--ink2)}.lnudge .btn{height:42px;font-size:14px;flex:none}
+.pass-league{margin:4px 14px 0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--near) 18%,var(--bg));font-size:13.5px;line-height:1.4;animation:stopin .5s both}
+.live .js-proto{display:none!important}
+
+/* ---- v4: drawn icons, inked stamps, flight route ---- */
+.ico{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em;flex:none}
+.how i .ico{width:20px;height:20px;color:var(--accent)}
+.brand .mark .ico{width:20px;height:20px;vertical-align:-4px}
+.hintbtn .ico{margin-right:3px}
+.chip .ico,.res-global .ico,.pass-league .ico,.lnudge .ico{color:var(--accent)}
+.badge .ico{width:13px;height:13px;vertical-align:-2px}
+/* flight route stepper */
+.flight{flex:none;position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:0 0 12px;padding:2px 0 0;list-style:none}
+.flight::before{content:'';position:absolute;left:10%;right:10%;top:17px;border-top:2px dotted color-mix(in srgb,var(--muted) 70%,transparent)}
+.flight .trail{position:absolute;left:10%;top:16px;height:3px;border-radius:2px;width:max(0px,calc(var(--prog,0) * 80%));background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 40%,transparent),var(--accent));transition:width .9s cubic-bezier(.4,.1,.2,1)}
+.flight .jet{position:absolute;top:6px;left:calc(10% + var(--prog,0) * 80%);width:24px;height:24px;margin-left:-12px;color:var(--accent);transition:left .9s cubic-bezier(.4,.1,.2,1);z-index:2;filter:drop-shadow(0 2px 3px rgba(0,0,0,.18))}
+.flight .jet .ico{width:24px;height:24px;transform:rotate(90deg)}
+.flight .jet.parked{opacity:0}
+.fs{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;z-index:1}
+.fs .fsn{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:1.5px dashed var(--line);color:var(--muted);font:800 11px var(--sans);font-variant-numeric:tabular-nums;transition:background .3s,border-color .3s,transform .3s}
+.fs .fsn .ico{width:16px;height:16px}
+.fs .fsl{width:100%;white-space:nowrap;font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);line-height:1.1;text-align:center}
+.fs .fsl small{display:block;font-weight:600;letter-spacing:0;opacity:.85;font-variant-numeric:tabular-nums}
+.fs.now .fsn{border:2px solid var(--accent);color:var(--accent);background:var(--surface);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
+.fs.now .fsl{color:var(--ink)}
+.fs.done .fsn{border:0;color:#fff;background:var(--c);transform:scale(1)}
+.fs.s-hit{--c:var(--hit)}.fs.s-near{--c:var(--near)}.fs.s-mid{--c:var(--mid)}.fs.s-far{--c:var(--far)}
+.fs.done .fsl{color:var(--ink2)}
+@media (max-height:600px){.fs .fsn{width:26px;height:26px}.flight::before,.flight .trail{top:13px}.flight .jet{top:2px}.fs .fsl small{display:none}}
+/* inked rubber stamps */
+.ink,.stamp,.pass-stamp{filter:url(#inked)}
+.ink{position:relative}
+.ink::before{content:'';position:absolute;inset:5px;border-radius:50%;border:1px dashed var(--c);opacity:.55}
+.ink::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid var(--c);opacity:.18;transform:translate(1.5px,-1px)}
+.ink .ik .ico{width:17px;height:17px;stroke-width:2}
+.stamp{border-style:double;border-width:4px;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 0%,transparent)}
+.page{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .4  0 0 0 0 .3  0 0 0 0 .2  0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"),repeating-linear-gradient(0deg,transparent 0 22px,color-mix(in srgb,var(--line) 45%,transparent) 22px 23px),var(--bg)!important}
+/* boarding pass security print */
+.pass-top{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='46' fill='none' stroke='%23fff' stroke-width='.6' opacity='.22'%3E%3Cpolyline points='0,19.4 4,23.1 8,26.1 12,28.0 16,28.4 20,27.2 24,24.7 28,21.3 32,17.5 36,14.1 40,11.6 44,10.4 48,10.8 52,12.7 56,15.7 60,19.4 64,23.1 68,26.1 72,28.0 76,28.4 80,27.2 84,24.7 88,21.3 92,17.5 96,14.1 100,11.6 104,10.4 108,10.8 112,12.7 116,15.7 120,19.4 124,23.1 128,26.1 132,28.0 136,28.4 140,27.2 144,24.7 148,21.3 152,17.5 156,14.1 160,11.6 164,10.4 168,10.8 172,12.7 176,15.7 180,19.4 184,23.1 188,26.1 192,28.0 196,28.4 200,27.2 204,24.7 208,21.3 212,17.5 216,14.1 220,11.6 224,10.4 228,10.8 232,12.7 236,15.7 240,19.4'/%3E%3Cpolyline points='0,28.9 4,30.7 8,31.2 12,30.1 16,27.8 20,24.4 24,20.5 28,16.6 32,13.3 36,11.0 40,10.0 44,10.5 48,12.4 52,15.5 56,19.2 60,23.2 64,26.7 68,29.5 72,31.0 76,31.0 80,29.6 84,27.0 88,23.5 92,19.5 96,15.7 100,12.6 104,10.6 108,10.0 112,10.9 116,13.1 120,16.3 124,20.2 128,24.1 132,27.5 136,30.0 140,31.1 144,30.8 148,29.1 152,26.2 156,22.5 160,18.5 164,14.9 168,12.0 172,10.3 176,10.1 180,11.3 184,13.8 188,17.3 192,21.2 196,25.0 200,28.2 204,30.4 208,31.2 212,30.5 216,28.5 220,25.3 224,21.5 228,17.6 232,14.1 236,11.5 240,10.1'/%3E%3Cpolyline points='0,33.7 4,32.1 8,29.3 12,25.7 16,21.6 20,17.5 24,14.0 28,11.3 32,9.8 36,9.7 40,11.0 44,13.5 48,17.0 52,21.0 56,25.1 60,28.8 64,31.7 68,33.5 72,34.0 76,33.0 80,30.8 84,27.6 88,23.7 92,19.5 96,15.7 100,12.5 104,10.4 108,9.6 112,10.2 116,12.1 120,15.1 124,18.9 128,23.0 132,27.0 136,30.4 140,32.8 144,33.9 148,33.7 152,32.1 156,29.3 160,25.7 164,21.6 168,17.5 172,14.0 176,11.3 180,9.8 184,9.7 188,11.0 192,13.5 196,17.0 200,21.0 204,25.1 208,28.8 212,31.7 216,33.5 220,34.0 224,33.0 228,30.8 232,27.6 236,23.7 240,19.5'/%3E%3Cpolyline points='0,28.9 4,24.8 8,20.5 12,16.5 16,13.1 20,10.6 24,9.4 28,9.4 32,10.7 36,13.2 40,16.6 44,20.7 48,24.9 52,29.0 56,32.5 60,35.1 64,36.6 68,36.7 72,35.5 76,33.2 80,29.8 84,25.9 88,21.6 92,17.5 96,13.9 100,11.2 104,9.6 108,9.2 112,10.2 116,12.5 120,15.7 124,19.6 128,23.9 132,28.0 136,31.7 140,34.6 144,36.3 148,36.8 152,35.9 156,33.9 160,30.8 164,26.9 168,22.7 172,18.5 176,14.7 180,11.7 184,9.8 188,9.2 192,9.9 196,11.8 200,14.8 204,18.6 208,22.8 212,27.0 216,30.9 220,33.9 224,36.0 228,36.8 232,36.3 236,34.5 240,31.6'/%3E%3Cpolyline points='0,17.4 4,13.8 8,11.0 12,9.3 16,8.8 20,9.6 24,11.5 28,14.5 32,18.2 36,22.5 40,26.8 44,31.0 48,34.6 52,37.4 56,39.1 60,39.6 64,38.8 68,36.9 72,33.9 76,30.2 80,25.9 84,21.6 88,17.4 92,13.8 96,11.0 100,9.3 104,8.8 108,9.6 112,11.5 116,14.5 120,18.2 124,22.5 128,26.8 132,31.0 136,34.6 140,37.4 144,39.1 148,39.6 152,38.8 156,36.9 160,33.9 164,30.2 168,25.9 172,21.6 176,17.4 180,13.8 184,11.0 188,9.3 192,8.8 196,9.6 200,11.5 204,14.5 208,18.2 212,22.5 216,26.8 220,31.0 224,34.6 228,37.4 232,39.1 236,39.6 240,38.8'/%3E%3Cpolyline points='0,8.8 4,8.4 8,9.2 12,11.2 16,14.1 20,17.8 24,22.1 28,26.6 32,31.0 36,35.0 40,38.3 44,40.8 48,42.1 52,42.3 56,41.4 60,39.3 64,36.2 68,32.4 72,28.2 76,23.7 80,19.3 84,15.4 88,12.1 92,9.8 96,8.6 100,8.5 104,9.6 108,11.8 112,15.0 116,18.9 120,23.2 124,27.7 128,32.0 132,35.9 136,39.0 140,41.2 144,42.3 148,42.2 152,41.0 156,38.6 160,35.4 164,31.4 168,27.0 172,22.6 176,18.3 180,14.5 184,11.5 188,9.4 192,8.5 196,8.7 200,10.1 204,12.5 208,15.9 212,19.9 216,24.3 220,28.8 224,33.0 228,36.7 232,39.7 236,41.6 240,42.4'/%3E%3Cpolyline points='0,12.2 4,15.5 8,19.5 12,23.9 16,28.5 20,33.0 24,37.0 28,40.5 32,43.1 36,44.7 40,45.2 44,44.6 48,42.9 52,40.2 56,36.7 60,32.6 64,28.1 68,23.6 72,19.2 76,15.2 80,12.0 84,9.6 88,8.3 92,8.0 96,8.9 100,10.9 104,13.8 108,17.5 112,21.7 116,26.2 120,30.8 124,35.1 128,38.8 132,41.9 136,44.0 140,45.1 144,45.0 148,43.9 152,41.7 156,38.6 160,34.7 164,30.4 168,25.8 172,21.3 176,17.1 180,13.5 184,10.7 188,8.8 192,8.0 196,8.4 200,9.8 204,12.2 208,15.5 212,19.5 216,23.9 220,28.5 224,33.0 228,37.0 232,40.5 236,43.1 240,44.7'/%3E%3C/svg%3E") center/240px 46px,linear-gradient(100deg,var(--accent),color-mix(in srgb,var(--accent) 78%,#0b2a3a));align-items:center}
+.pass-top .ico{width:17px;height:17px;vertical-align:-3px;margin-right:5px;transform:rotate(90deg)}
+.pass{position:relative}
+.pass-stamp{position:absolute;right:42%;bottom:8px;width:66px;height:66px;border-radius:50%;border:2.5px solid color-mix(in srgb,var(--accent) 55%,transparent);color:color-mix(in srgb,var(--accent) 55%,transparent);display:grid;place-items:center;text-align:center;font:800 8px/1.15 var(--sans);letter-spacing:.12em;text-transform:uppercase;transform:rotate(-14deg);pointer-events:none;opacity:.5}
+.pass-stamp::before{content:'';position:absolute;inset:4px;border-radius:50%;border:1px dashed currentColor}
+.pass-stamp b{display:block;font:600 15px var(--serif);letter-spacing:0}
+.stop .si .ico{width:21px;height:21px;color:var(--ink2)}
+.pass-stats .ico{color:var(--accent)}
+.board-go .ico{width:22px;height:22px;vertical-align:-5px;margin-left:6px;transform:rotate(90deg)}
+.rk-icon .ico{width:26px;height:26px;color:var(--accent);stroke-width:1.5}
+.res-lines li .ico{color:var(--muted);margin-right:2px}
+.md{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;font:800 11px var(--sans);color:#fff;background:var(--c,var(--muted))}
+.md.m1{--c:#C9A227}.md.m2{--c:#9AA3AD}.md.m3{--c:#B07A4A}
+.sc-head .ico{color:var(--accent);margin-right:2px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<filter id="inked" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+<feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="2" seed="7" result="n"/>
+<feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+<feTurbulence type="fractalNoise" baseFrequency="1.7" numOctaves="1" seed="3" result="s"/>
+<feColorMatrix in="s" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 0 0 0 3.85" result="m"/>
+<feComposite in="d" in2="m" operator="in"/>
+</filter></defs></svg>
+<header><div class="bar">
+  <div class="brand"><span class="mark"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(45deg)"><path d="M12 2.3c.95 0 1.55 1.05 1.55 2.4v4.1l7.2 4.3v2l-7.2-2.2v4.5l2.1 1.6v1.6L12 19.5l-3.65 1.1V19l2.1-1.6v-4.5l-7.2 2.2v-2l7.2-4.3V4.7c0-1.35.6-2.4 1.55-2.4z" fill="currentColor" stroke="none"/></svg></span><span class="word">Passport</span><span class="proto js-proto">Prototype</span></div>
+  <button class="ib" id="bLeagues" aria-label="Leagues"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20.5h7M10 17h4"/></svg></button>
+  <button class="ib" id="bBook" aria-label="My passport book"><svg viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v16H6.5A1.5 1.5 0 0 0 5 20.5z"/><path d="M5 20.5A1.5 1.5 0 0 0 6.5 22H19v-3"/><circle cx="12" cy="10.5" r="3"/></svg></button>
+  <button class="ib" id="bSet" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg></button>
+  <button class="ib" id="bHelp" aria-label="How to play"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.8-2.5 2.2-2.5 3.8"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg></button>
+  <button class="ib" id="bScore" aria-label="Today's score"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg></button>
+</div></header>
+
+<main>
+  <div class="top"><div class="day">No. <span id="no"></span><small id="date"></small></div><div class="score" id="scorePill" aria-live="polite">Score <b id="total">0</b><span style="color:var(--muted);font-weight:600"> / 1000</span></div></div>
+  <ol class="flight" id="steps" aria-label="Today's five stamps"></ol>
+  <div class="stage card" id="stage">
+    <span class="lvtag" id="lvtag"></span>
+    <button class="hintbtn" id="bHint"></button>
+    <canvas id="map" role="img" aria-label="Outline of the mystery country"></canvas>
+    <div id="pinWrap" hidden>
+      <canvas id="pinmap" role="img" aria-label="Blank world map. Tap to drop your pin."></canvas>
+      <div class="find" id="find"></div>
+      <div class="zoom"><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zReset" aria-label="Whole world" style="font-size:14px">⤢</button></div>
+    </div>
+    <div class="pane" id="pane"></div>
+    <div id="stampBox"></div>
+    <div id="nextBox"></div>
+  </div>
+  <div class="chips" id="chips" aria-live="polite"></div>
+</main>
+
+<div class="dock"><div class="dockin">
+  <ul class="list" id="list" role="listbox"></ul>
+  <form class="field" id="form" autocomplete="off"><label for="inp" class="sr">Type a country</label>
+    <input id="inp" autocapitalize="words" spellcheck="false" enterkeyhint="go"><button class="btn" type="submit">Go</button></form>
+  <form class="field" id="capForm" autocomplete="off" hidden><label for="capInp" class="sr">Type the capital city</label>
+    <input id="capInp" autocapitalize="words" spellcheck="false" enterkeyhint="go" placeholder="Type the capital city"><button class="btn" type="submit">Go</button></form>
+  <div class="opts" id="opts"></div>
+  <button class="btn wide accent" id="bLock" hidden>Lock in my pin</button>
+  <button class="btn wide accent" id="bResults" hidden>See today’s passport</button>
+  <div class="msg" id="msg" role="alert"></div>
+</div></div>
+
+<dialog id="dHelp"><div class="sheet" tabindex="-1" autofocus>
+  <button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2>Five stamps a day</h2>
+  <p>Every day your passport has five challenges, picked from eight kinds. They get harder as you go, and later stamps are worth more: <b>100, 150, 200, 250, 300</b>. That’s up to <b>1,000</b> a day.</p>
+  <div class="how">
+    <div><i>__explorer__</i><span><b>Traveller rank:</b> every point you score is XP. Climb from Tourist to Legend.</span></div>
+    <div><i>__outline__</i><span><b>Eight kinds:</b> Outline, Flag, Capital, Whose capital?, Borders, Odd one out, Bigger, and Pin it.</span></div>
+    <div><i>__check__</i><span><b>Scoring:</b> full points first time, 40% on a second try. Pin it pays by distance, scaled to the country’s size. Bigger pays for 3+ right out of 5. Score 60% of a stamp’s value to earn it.</span></div>
+    <div><i>__hint__</i><span>Stuck? A hint costs a quarter of that stamp’s points.</span></div>
+    <div><i>__book__</i><span>Every country you get right is stamped into your <b>passport book</b>. Can you fill all 195?</span></div>
+    <div><i>__expert__</i><span>Too easy? Turn on <b>Expert mode</b> in Settings to type your answers.</span></div>
+  </div>
+  <button class="btn wide" data-close>Open my passport</button>
+</div></dialog>
+<dialog id="dSet"><div class="sheet" tabindex="-1" autofocus>
+  <button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2>Settings</h2>
+  <h3>Difficulty</h3>
+  <div class="switch"><span><b>Expert mode</b>Type the answers to Flag, Capital, Whose capital? and Borders instead of choosing. Your share shows an Expert badge. Takes effect on the next stamp.</span><button class="tog" id="tExpert" role="switch" aria-checked="false" aria-label="Expert mode"></button></div>
+  <div class="switch" style="margin-top:8px"><span><b>Sound &amp; vibration</b>Stamps, chimes and a little buzz on your phone.</span><button class="tog" id="tSound" role="switch" aria-checked="true" aria-label="Sound"></button></div>
+  <h3>Account</h3>
+  <div class="js-acct" data-where="settings"></div>
+  <div class="js-proto"><h3>Prototype</h3>
+  <p style="font-size:13px">Use Replay on the results screen to play today again.</p>
+  <button class="btn ghost wide" id="bClearBook" style="margin-top:6px">Reset everything (book, rank, streak)</button></div>
+</div></dialog>
+<dialog id="dBook"></dialog>
+<dialog id="dBoard" class="boarddlg"></dialog>
+<dialog id="dLeague"><div class="sheet" tabindex="-1" autofocus>
+  <button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2>Leagues</h2>
+  <p>A private table for your group chat. Everyone gets the same five stamps; see who scores most today and across the week.</p>
+  <p class="saved" id="lgOffline" hidden>Leagues need the online scoreboard, which isn’t connected on this copy of Passport.</p>
+  <div id="lgForms">
+    <div class="msg" id="lgMsg" role="status"></div>
+    <div id="lgList"></div>
+    <h3>Your name in leagues</h3>
+    <input class="tin" id="lgName" maxlength="20" placeholder="e.g. Alex" autocomplete="nickname">
+    <div class="lgbox" id="lgJoinBox"><h3>Join a league</h3><div class="field"><input class="tin" id="lgCode" maxlength="6" placeholder="6-letter code" autocapitalize="characters" spellcheck="false"><button class="btn" id="lgJoin" type="button">Join</button></div></div>
+    <div class="lgbox"><h3 id="lgStartHead">Start a league</h3><div class="field"><input class="tin" id="lgNew" maxlength="30" placeholder="League name, e.g. The Ashtons"><button class="btn accent" id="lgCreate" type="button">Create</button></div></div>
+  </div>
+</div></dialog>
+<dialog id="dRes"></dialog>
+
+<script src="config.js"></script><script src="geo.js"></script><script src="data.js"></script><script src="flags.js"></script><script src="common.js"></script>
+<script>
+(() => {
+'use strict';
+const {$, esc, byCode, UN, tier, featById, feats, dailyRng, shuffle, pick, dayNum, fmtDate, guessFeedback, fmtKm, arrow, pointGapKm, distKm, gapKm, store, results, EMO, clsFor, autocomplete, Outline, openDlg, toast, readColors, search} = GK;
+const GAME = 'passport2', KEY = 'proto-passport2', BOOK_KEY = 'passport-book', HIST_KEY = 'passport-hist', PREF_KEY = 'passport-prefs';
+const LMAX = [100, 150, 200, 250, 300], HINT_COST = .25, STAMP_SHARE = .6;
+const GAMES = {
+  outline: {name: 'Outline', short: 'Outline'}, flag: {name: 'Flag', short: 'Flag'}, capital: {name: 'Capital', short: 'Capital'},
+  whose: {name: 'Whose capital?', short: 'Whose?'}, borders: {name: 'Borders', short: 'Borders'}, odd: {name: 'Odd one out', short: 'Odd one'},
+  bigger: {name: 'Bigger', short: 'Bigger'}, pin: {name: 'Pin it', short: 'Pin it'},
+};
+/* ================= one save object, synced to the player's account ================= */
+const STORE_KEY = 'passport:v3';
+const P = (() => {
+  let p = store.get(STORE_KEY);
+  if (!p) { p = {games: {}, book: store.get('passport-book') || {}, prefs: store.get('passport-prefs') || {}}; }   // carry over a v2 book
+  p.games = p.games || {}; p.book = p.book || {}; p.prefs = p.prefs || {}; p.fz = p.fz || {earned: {}, used: {}};
+  return p;
+})();
+const persist = () => { store.set(STORE_KEY, P); Account.push(); };
+
+/* ================= backends: Claude preview database, or Supabase on your own site ================= */
+const CFG = window.PASSPORT_CONFIG || {};
+const PROTO = CFG.prototype !== false;   // the live site sets prototype: false (no replay, no reset)
+if (!PROTO) document.documentElement.classList.add('live');
+const SB = {url: String(CFG.supabaseUrl || '').trim().replace(/\/+$/, ''), key: String(CFG.supabaseKey || '').trim()};
+const cap = name => (window.claude && typeof window.claude.use === 'function') ? Promise.resolve(window.claude.use(name)).catch(() => null) : Promise.resolve(null);
+const withTimeout = (p, ms = 9000) => Promise.race([p, new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms))]);
+const sbHeaders = () => ({'apikey': SB.key, ...(SB.key.startsWith('eyJ') ? {'Authorization': 'Bearer ' + SB.key} : {}), 'Content-Type': 'application/json'});
+let backendP = null;
+function backend() {
+  return backendP || (backendP = (async () => {
+    if (SB.url && SB.key) return {kind: 'supabase'};
+    const [db, user] = await Promise.all([cap('db'), cap('user')]); if (!db) return null;
+    let uid = null; try { uid = user ? await user.id() : null; } catch (e) {}
+    return {kind: 'claude', db, uid};
+  })().catch(() => null));
+}
+function playerId() {
+  if (!P.prefs.pid) { P.prefs.pid = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }); store.set(STORE_KEY, P); }
+  return P.prefs.pid;
+}
+// today's scoreboard: submit once, then ask how many scored lower
+async function submitScore(day, score) {
+  P.prefs.sent = P.prefs.sent || {}; if (P.prefs.sent[day]) return;
+  const b = await backend(); if (!b) return;
+  try {
+    if (b.kind === 'supabase') { const r = await withTimeout(fetch(SB.url + '/rest/v1/passport_plays', {method: 'POST', headers: {...sbHeaders(), 'Prefer': 'resolution=ignore-duplicates,return=minimal'}, body: JSON.stringify({day, player: playerId(), score})})); if (!r.ok && r.status !== 409) throw 0; }
+    else { if (!b.uid) return; const ref = b.db.doc('pp/' + b.uid), snap = await withTimeout(ref.get()), k = 'd' + day; if (snap.exists) { if (snap.data()[k] == null) await withTimeout(ref.update({[k]: score})); } else await withTimeout(ref.set({[k]: score})); }
+    P.prefs.sent[day] = 1; persist();
+  } catch (e) {}
+}
+async function fetchRank(day, score) {
+  const b = await backend(); if (!b) return null;
+  if (b.kind === 'supabase') { const r = await withTimeout(fetch(SB.url + '/rest/v1/rpc/passport_rank', {method: 'POST', headers: sbHeaders(), body: JSON.stringify({d: day, s: score})})); if (!r.ok) throw 0; const j = await r.json(); const row = Array.isArray(j) ? j[0] : j; return {total: +row.total, below: +row.below}; }
+  const snap = await withTimeout(b.db.collection('pp').where('d' + day, '>=', 0).get());
+  const scores = snap.docs.map(d => +d.data()['d' + day]);
+  return {total: scores.length, below: scores.filter(s => s < score).length};
+}
+
+/* ================= optional account (email link/code on your own site; automatic in the Claude preview) ================= */
+const Account = (() => {
+  let kind = null, sb = null, session = null, uid = null, db = null, ready = false, pushT = null, lastSync = 0, sentTo = '', busy = false;
+  const loadScript = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  async function init() {
+    try {
+      if (SB.url && SB.key && CFG.accounts !== false) {
+        await withTimeout(loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'), 10000);
+        sb = window.supabase.createClient(SB.url, SB.key, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit', storageKey: 'passport-auth'}});
+        kind = 'supabase';
+        const {data} = await sb.auth.getSession(); session = data && data.session;
+        sb.auth.onAuthStateChange((ev, s) => { const was = !!session; session = s; if (s && !was) pull().then(() => { toast('Passport saved to your account ✓'); FX.sfx.right(); }); renderAll(); });
+        if (session) await pull();
+      } else {
+        const b = await backend();
+        if (b && b.kind === 'claude' && b.uid) { kind = 'claude'; uid = b.uid; db = b.db; await pull(); }
+      }
+    } catch (e) {}
+    ready = true; applyFreezes(); renderAll();
+  }
+  const signedIn = () => kind === 'claude' || (kind === 'supabase' && !!session);
+  async function cloudGet() {
+    if (kind === 'supabase') { const {data, error} = await sb.from('passport_saves').select('data').eq('user_id', session.user.id).maybeSingle(); if (error) throw error; return data ? data.data : null; }
+    const s = await withTimeout(db.doc('data/users/' + uid + '/passport').get()); return s.exists ? JSON.parse(s.data().json || 'null') : null;
+  }
+  async function cloudPut() {
+    if (kind === 'supabase') { const {error} = await sb.from('passport_saves').upsert({user_id: session.user.id, data: P, updated_at: new Date().toISOString()}); if (error) throw error; return; }
+    await withTimeout(db.doc('data/users/' + uid + '/passport').set({json: JSON.stringify(P), at: Date.now()}));
+  }
+  async function pull() {
+    if (!signedIn()) return;
+    const cloud = await cloudGet().catch(() => undefined); if (cloud === undefined) return;
+    if (cloud) { const m = merge(P, cloud); Object.keys(P).forEach(k => delete P[k]); Object.assign(P, m); store.set(STORE_KEY, P); reloadToday(); }
+    await push(true);
+  }
+  async function push(now) {
+    if (!signedIn() || !ready && !now) return;
+    clearTimeout(pushT);
+    const run = async () => { try { await cloudPut(); lastSync = Date.now(); } catch (e) {} };
+    if (now) return run(); pushT = setTimeout(run, 1500);
+  }
+  function merge(local, cloud) {
+    const done = g => g ? g.levels.filter(l => l.done).length * 10 + g.levels.reduce((a, l) => a + (l.tries || []).length, 0) : -1;
+    const games = {...(cloud.games || {})}; for (const [d, g] of Object.entries(local.games || {})) if (done(g) >= done(games[d])) games[d] = g;
+    const book = {...(cloud.book || {})}; for (const [c, v] of Object.entries(local.book || {})) if (!book[c] || v.d < book[c].d) book[c] = v;
+    const lp = local.prefs || {}, cp = cloud.prefs || {}, lf = local.fz || {}, cf = cloud.fz || {};
+    return {games, book, prefs: {...cp, ...lp, pid: cp.pid || lp.pid, sent: {...(cp.sent || {}), ...(lp.sent || {})}},
+      fz: {earned: {...(cf.earned || {}), ...(lf.earned || {})}, used: {...(cf.used || {}), ...(lf.used || {})}}};
+  }
+  // the account panel (Settings) and the "save your passport" card (results, book)
+  function panel(where) {
+    if (!ready) return '<p class="fine">Checking your passport…</p>';
+    if (kind === 'claude') return '<div class="saved">✓ Backed up to your Claude account. Your book, rank and streak follow you to any device. Streak freezes are on.</div>';
+    if (kind !== 'supabase') return where === 'settings' ? '<p class="fine">Accounts aren’t switched on for this copy of Passport yet. Your passport is saved on this device.</p>' : '';
+    if (session) return '<div class="saved">✓ Signed in as <b>' + esc(session.user.email || 'you') + '</b>. Your passport is backed up.</div>' + (where === 'settings' ? '<div class="row"><button class="btn ghost" data-ac="out">Sign out</button><button class="btn ghost" data-ac="del" style="color:var(--far)">Delete account</button></div>' : '');
+    const n = Object.keys(P.book).length, st = streak();
+    return '<div class="savecard"><div class="sc-head">' + ico('book') + ' Save your passport</div>' +
+      '<ul class="perks"><li><b>Keep your ' + n + ' countr' + (n === 1 ? 'y' : 'ies') + (st > 1 ? ' and ' + st + '-day streak' : '') + '</b> if you change or lose your phone</li><li><b>Streak freezes:</b> miss a day without losing your streak</li><li><b>Play anywhere:</b> phone, laptop, tablet</li></ul>' +
+      (sentTo ? '<p class="fine">We emailed <b>' + esc(sentTo) + '</b>. Tap the link, or type the 6-digit code:</p><div class="field"><input class="tin" data-ac="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"><button class="btn" data-ac="verify">Verify</button></div><button class="linkbtn" data-ac="back">Use a different email</button>'
+        : '<div class="field"><input class="tin" data-ac="email" type="email" autocomplete="email" placeholder="you@example.com"><button class="btn accent" data-ac="send">Save</button></div><p class="fine" style="margin-top:6px">Free, no password. We only use your email to sign you in.</p>') +
+      '<div class="msg" data-ac="msg"></div></div>';
+  }
+  document.addEventListener('click', async e => {
+    const b = e.target.closest('[data-ac]'); if (!b || b.tagName === 'INPUT') return;
+    const box = b.closest('.sheet') || document, msg = m => { const el = box.querySelector('[data-ac="msg"]'); if (el) el.textContent = m; };
+    const act = b.dataset.ac; if (busy) return;
+    if (act === 'send') {
+      const email = (box.querySelector('[data-ac="email"]').value || '').trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return msg('That doesn’t look like an email address.');
+      busy = true; const {error} = await sb.auth.signInWithOtp({email, options: {emailRedirectTo: location.href.split('#')[0], shouldCreateUser: true}}); busy = false;
+      if (error) return msg(/rate|limit/i.test(error.message) ? 'Too many emails just now. Try again in a few minutes.' : 'Couldn’t send the email: ' + error.message);
+      sentTo = email; renderAll();
+    } else if (act === 'verify') {
+      const token = (box.querySelector('[data-ac="code"]').value || '').replace(/\D/g, ''); if (token.length < 6) return msg('Enter the code from the email.');
+      busy = true; const {error} = await sb.auth.verifyOtp({email: sentTo, token, type: 'email'}); busy = false;
+      if (error) msg('That code didn’t work. Check it, or send a new one.'); else sentTo = '';
+    } else if (act === 'back') { sentTo = ''; renderAll(); }
+    else if (act === 'out') { await sb.auth.signOut().catch(() => {}); session = null; toast('Signed out. This device keeps its passport.'); renderAll(); }
+    else if (act === 'del') {
+      if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Tap again to delete'; return; }
+      const {error} = await sb.rpc('delete_my_passport'); if (error) return toast('Couldn’t delete just now');
+      await sb.auth.signOut().catch(() => {}); session = null; toast('Account deleted. This device keeps its passport.'); renderAll();
+    }
+  });
+  return {init, push, pull, signedIn, panel, kind: () => kind, ready: () => ready};
+})();
+function renderAll() { document.querySelectorAll('.js-acct').forEach(el => el.innerHTML = Account.panel(el.dataset.where)); }
+
+/* ================= progress: streaks, freezes, traveller ranks ================= */
+const dayTotal = d => { const g = P.games[d]; return g && g.levels.every(l => l.done) ? g.levels.reduce((a, l) => a + l.pts, 0) : null; };
+const played = d => dayTotal(d) != null && !(P.games[d] && P.games[d].late);
+function streak(upTo) {
+  let n = 0, d = upTo || dayNum(); if (!upTo && !played(d)) d--;
+  while (d >= 1 && (played(d) || P.fz.used[d])) { if (played(d)) n++; d--; }
+  return n;
+}
+const freezes = () => Math.max(0, Math.min(2, Object.keys(P.fz.earned).length - Object.keys(P.fz.used).length));
+function applyFreezes() {   // account holders only: cover missed days automatically
+  if (!Account.signedIn()) return;
+  const T = dayNum(); let last = 0; for (const d of Object.keys(P.games).map(Number)) if (d < T && played(d) && d > last) last = d;
+  if (!last) return; const gap = []; for (let d = last + 1; d < T; d++) if (!played(d) && !P.fz.used[d]) gap.push(d);
+  if (!gap.length || gap.length > freezes() || streak(last) < 1) return;
+  gap.forEach(d => P.fz.used[d] = 1); persist();
+  setTimeout(() => toast('Streak freeze used. Your ' + streak() + '-day streak is safe'), 900);
+}
+/* ================= hand-drawn line icons (no emoji in the interface) ================= */
+const SVGI = {
+  outline: '<path d="M5 8.5 8 5l3.2 1.6L14 4l3.5 2.2.7 3.3 2.3 2-1.6 3.4.6 3.6-3.7.9-2.4 1.9-3.3-1.4-3.8.4-1.2-3.2L3.6 14l1.8-2.6z"/>',
+  flag: '<path d="M5 21V3.5"/><path d="M5 4.5c3-1.8 5.5 1.6 8.5 0s4.6-.8 5.5-.2v8.4c-.9-.6-2.5-1.4-5.5.2s-5.5-1.8-8.5 0"/>',
+  capital: '<path d="M3 20.5h18M4.5 18h15M12 3.5 3.5 8h17z"/><path d="M6.5 10.5v5.5M10 10.5v5.5M14 10.5v5.5M17.5 10.5v5.5"/>',
+  whose: '<path d="M12 21V3"/><path d="M12 5h6.5l2 2-2 2H12M12 11.5H5.5l-2 2 2 2H12"/>',
+  borders: '<path d="M4 6.5 9 4l2.5 3.5-1 5L5.5 15 3 11z"/><path d="M20.5 9 16 6l-3 2.5 1 5.5 4.5 3 3-3.5z"/><path d="M12 3v18" stroke-dasharray="2 2.4"/>',
+  odd: '<circle cx="6" cy="7" r="2.6"/><circle cx="18" cy="7" r="2.6"/><circle cx="6" cy="17" r="2.6"/><path d="m15.3 14.3 5.4 5.4M20.7 14.3l-5.4 5.4"/>',
+  bigger: '<path d="M12 4v16M7 20.5h10M4.5 7.5h15M12 4.5 4.5 7.5M12 4.5l7.5 3"/><path d="M4.5 7.5 2 13.5a2.6 2.6 0 0 0 5 0zM19.5 7.5 17 13.5a2.6 2.6 0 0 0 5 0z"/>',
+  pin: '<path d="M12 21.5s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0c0 5-6.5 11.2-6.5 11.2z"/><circle cx="12" cy="10.2" r="2.3"/>',
+  // ranks
+  tourist: '<rect x="3" y="7.5" width="18" height="12" rx="2.5"/><path d="M8.5 7.5 10 5h4l1.5 2.5"/><circle cx="12" cy="13.5" r="3.4"/>',
+  daytripper: '<rect x="4" y="8" width="16" height="11.5" rx="2.2"/><path d="M9 8V5.6A1.6 1.6 0 0 1 10.6 4h2.8A1.6 1.6 0 0 1 15 5.6V8M8 8v11.5M16 8v11.5"/>',
+  backpacker: '<path d="M7 9.5a5 5 0 0 1 10 0V20H7z"/><path d="M9.5 4.8V3.5h5v1.3M9.5 14h5v3.5h-5z"/>',
+  explorer: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8z"/>',
+  navigator: '<path d="M12 3v14M12 4.5 18.5 15H12M11 6.5 6 15h5"/><path d="M3.5 18h17l-2 2.5h-13z"/>',
+  cartographer: '<path d="M3.5 6.5 9 4.5l6 2 5.5-2v13l-5.5 2-6-2-5.5 2z"/><path d="M9 4.5v13M15 6.5v13"/>',
+  globetrotter: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-3 3.2-3 14.8 0 18M12 3c3 3.2 3 14.8 0 18"/>',
+  ambassador: '<path d="M8 3h8l-2 6h-4z"/><circle cx="12" cy="15" r="5.5"/><path d="m12 12.4.9 1.8 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>',
+  legend: '<path d="M3.5 18.5h17M4.5 18.5 3 7.5l5 4 4-6.5 4 6.5 5-4-1.5 11"/>',
+  // ui
+  hint: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>',
+  book: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v16H6.5A1.5 1.5 0 0 0 5 20.5z"/><path d="M5 20.5A1.5 1.5 0 0 0 6.5 22H19v-3"/><circle cx="12" cy="10.5" r="3"/>',
+  flame: '<path d="M12 21.5c-4 0-6.5-2.6-6.5-6.2 0-3.4 2.5-5.2 3.5-8.3.9 1.6 1.8 2.5 3 2.8-.3-2.6.8-5.2 3-6.8.2 3.7 3.5 6.2 3.5 11.3 0 4.1-2.6 7.2-6.5 7.2z"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20.5h7M10 17h4"/>',
+  expert: '<path d="M2.5 9 12 4.5 21.5 9 12 13.5z"/><path d="M6.5 11v4.5c0 1.4 2.5 3 5.5 3s5.5-1.6 5.5-3V11M21.5 9v5"/>',
+  plane: '<path d="M12 2.3c.95 0 1.55 1.05 1.55 2.4v4.1l7.2 4.3v2l-7.2-2.2v4.5l2.1 1.6v1.6L12 19.5l-3.65 1.1V19l2.1-1.6v-4.5l-7.2 2.2v-2l7.2-4.3V4.7c0-1.35.6-2.4 1.55-2.4z" fill="currentColor" stroke="none"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+};
+const ico = (name, cls) => '<svg class="ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + (SVGI[name] || '') + '</svg>';
+const ICON = new Proxy({}, {get: (_, k) => ico(k)});
+
+const RANKS = [[0, 'Tourist', '🎒', 'tourist'], [1500, 'Day-tripper', '🧳', 'daytripper'], [4000, 'Backpacker', '🥾', 'backpacker'], [8000, 'Explorer', '🧭', 'explorer'], [14000, 'Navigator', '⛵', 'navigator'], [22000, 'Cartographer', '🗺️', 'cartographer'], [32000, 'Globetrotter', '🌍', 'globetrotter'], [45000, 'Ambassador', '🎖️', 'ambassador'], [60000, 'Legend', '👑', 'legend']];
+const xpTotal = () => Object.keys(P.games).reduce((a, d) => a + (dayTotal(+d) || 0), 0);
+function rankOf(xp) { let i = 0; while (i < RANKS.length - 1 && xp >= RANKS[i + 1][0]) i++; const [min, name, icon, svg] = RANKS[i], next = RANKS[i + 1]; return {i, name, icon, svg: ico(svg), min, next: next ? next[0] : null, nextName: next ? next[1] : null}; }
+
+/* ================= feel: sound, haptics, flying points, confetti ================= */
+const FX = (() => {
+  let ac = null; const on = () => P.prefs.sound !== false, calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ctx = () => { try { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) {} return ac; };
+  function tone(f, t0, dur, type = 'sine', vol = .16, to) { const a = ctx(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + t0; o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.001, t + dur); o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .05); }
+  function thud(t0, vol = .3) { const a = ctx(); if (!a) return; const n = Math.floor(a.sampleRate * .14), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3); const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = 'lowpass'; f.frequency.value = 700; g.gain.value = vol; s.connect(f).connect(g).connect(a.destination); s.start(a.currentTime + t0); }
+  const buzz = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+  let lastTick = 0;
+  const sfx = {
+    right() { if (on()) { tone(659, 0, .12, 'triangle'); tone(988, .08, .25, 'triangle'); } buzz(15); },
+    wrong() { if (on()) tone(190, 0, .2, 'sawtooth', .05, 120); buzz([30, 40, 30]); },
+    stamp() { if (on()) { thud(0); tone(120, 0, .16, 'sine', .22, 60); } buzz(28); },
+    tick() { const n = performance.now(); if (on() && n - lastTick > 45) { lastTick = n; tone(1500, 0, .025, 'square', .025); } },
+    rank() { if (on()) [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .09, .3, 'triangle', .13)); buzz([20, 30, 20, 30, 40]); },
+    board() { if (on()) { tone(260, 0, .7, 'sine', .07, 640); tone(390, .05, .7, 'sine', .04, 960); } buzz(12); },
+  };
+  function floatPts(text, cls) { if (calm) return; const r = $('stage').getBoundingClientRect(), d = document.createElement('div'); d.className = 'floatpts ' + (cls || ''); d.textContent = text; d.style.left = (r.left + r.width / 2) + 'px'; d.style.top = (r.top + r.height * .42) + 'px'; document.body.appendChild(d); setTimeout(() => d.remove(), 1300); }
+  function countUp(el, from, to, ms = 700, ticks = true) {
+    if (calm || from === to) { el.textContent = to.toLocaleString(); return; }
+    const t0 = performance.now(); el.dataset.anim = '1';
+    const step = now => { const p = Math.min(1, (now - t0) / ms), v = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3))); el.textContent = v.toLocaleString(); if (ticks) sfx.tick(); if (p < 1) requestAnimationFrame(step); else delete el.dataset.anim; };
+    requestAnimationFrame(step);
+  }
+  function confetti(n = 90) {
+    if (calm) return; const c = document.createElement('canvas'), dpr = Math.min(devicePixelRatio || 1, 2); c.className = 'confetti'; document.body.appendChild(c);
+    const W = c.width = innerWidth * dpr, H = c.height = innerHeight * dpr, x = c.getContext('2d'), cols = ['#7A2E3B', '#2E8A66', '#E2A93B', '#E07B39', '#3B6FB6', '#C0606F'];
+    const ps = Array.from({length: n}, () => ({x: W / 2 + (Math.random() - .5) * W * .25, y: H * .42, vx: (Math.random() - .5) * W * .02, vy: -Math.random() * H * .024 - H * .006, r: (4 + Math.random() * 4) * dpr, c: cols[Math.random() * cols.length | 0], a: Math.random() * 6, va: (Math.random() - .5) * .35}));
+    const t0 = performance.now(); const step = now => { const t = now - t0; x.clearRect(0, 0, W, H); for (const p of ps) { p.vy += H * .0009; p.x += p.vx; p.y += p.vy; p.a += p.va; x.save(); x.translate(p.x, p.y); x.rotate(p.a); x.globalAlpha = Math.max(0, 1 - t / 1700); x.fillStyle = p.c; x.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); x.restore(); } if (t < 1700) requestAnimationFrame(step); else c.remove(); };
+    requestAnimationFrame(step);
+  }
+  document.addEventListener('pointerdown', () => ctx(), {once: true});
+  return {sfx, floatPts, countUp, confetti, calm};
+})();
+
+const prefs = P.prefs;
+const flagCache = new Map();
+const flagUrl = code => { if (!flagCache.has(code)) flagCache.set(code, window.FLAGS[code] ? "url('data:image/svg+xml;utf8," + encodeURIComponent(window.FLAGS[code]).replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29') + "')" : 'none'); return flagCache.get(code); };
+const flag = code => '<i class="fl" style="background-image:' + flagUrl(code) + '" aria-hidden="true"></i>';
+const BOOK = GK.C.filter(c => (c.un || c.c === 'VAT' || c.c === 'PSE') && c.c !== 'XKX');
+const REGIONS = ['Africa', 'Americas', 'Asia', 'Europe', 'Oceania'];
+
+/* ---------- puns ---------- */
+const PUNS = [
+  [1000, ['Fully stamped and flying first class.', 'Globetrotter of the day. Customs salutes you.']],
+  [850, ['Business-class performance.', 'You’ve really been around.']],
+  [700, ['Frequent-flyer form.', 'A seasoned traveller. Barely needed the map.']],
+  [550, ['A solid trip with minor turbulence.', 'Some delays, but you landed it.']],
+  [400, ['Economy class, but you got there.', 'Halfway round the world. Not bad for a day trip.']],
+  [250, ['Lost your luggage, found a few answers.', 'You took the scenic route today.']],
+  [100, ['Missed the connecting flight.', 'Passport control has a few questions.']],
+  [0, ['Didn’t make it past check-in. Tomorrow’s another flight.', 'Grounded today. Clear skies tomorrow.']],
+];
+const pun = (t, day) => { const l = PUNS.find(([m]) => t >= m)[1]; return l[day % l.length]; };
+
+/* ---------- today's itinerary: five of eight games, each harder than the last ---------- */
+const T1 = tier(1), T2 = tier(2), T3 = tier(3), isT1 = new Set(T1.map(c => c.c));
+const FAME = [T1, [...T1, ...T2.filter(c => c.rank <= 60)], T2, UN.filter(c => !isT1.has(c.c) && c.rank > 40), UN.filter(c => !isT1.has(c.c) && c.rank > 90)];
+const OUTLINE_POOL = [T1, T1, T2, T2, T3];
+const nOpts = lv => lv < 3 ? 4 : 6;
+function build() {
+  const r = dailyRng(GAME), used = new Set();
+  const take = (pool, ok = () => true) => { const c = shuffle(r, pool).find(x => !used.has(x.c) && ok(x)) || shuffle(r, UN).find(x => !used.has(x.c) && ok(x)); used.add(c.c); return c; };
+  const distract = (ans, n, ok = () => true) => {
+    const cand = UN.filter(c => c.c !== ans.c && ok(c));
+    const near = shuffle(r, cand.filter(c => c.sr === ans.sr)), reg = shuffle(r, cand.filter(c => c.r === ans.r && c.sr !== ans.sr)), any = shuffle(r, cand);
+    return [...new Set([...near, ...reg, ...any])].slice(0, n);
+  };
+  const kinds = shuffle(r, Object.keys(GAMES)).slice(0, 5);
+  return kinds.map((kind, lv) => {
+    const L = {kind, lv, max: LMAX[lv], done: false, pts: 0, tries: [], hint: false};
+    const n = nOpts(lv);
+    if (kind === 'outline') L.code = take(OUTLINE_POOL[lv]).c;
+    if (kind === 'flag') { const a = take(FAME[lv]); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
+    if (kind === 'capital') { const a = take(FAME[lv], c => c.cap); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1, c => c.cap && c.cap !== a.cap)]).map(c => c.c); }
+    if (kind === 'whose') { const a = take(FAME[lv], c => c.cap); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
+    if (kind === 'borders') { const a = take(FAME[lv], c => c.b.filter(b => byCode.has(b)).length >= 3); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
+    if (kind === 'odd') {
+      const s = take(FAME[lv], c => c.b.filter(b => byCode.has(b)).length >= n - 1); const nb = shuffle(r, s.b.filter(b => byCode.has(b))).slice(0, n - 1);
+      const odd = UN.filter(c => c.c !== s.c && !s.b.includes(c.c) && !used.has(c.c)).map(c => [c, distKm(c.ll, s.ll)]).sort((a, b) => a[1] - b[1]).slice(0, 6);
+      const o = pick(r, odd)[0]; used.add(o.c);
+      L.subject = s.c; L.code = o.c; L.options = shuffle(r, [o.c, ...nb]);
+    }
+    if (kind === 'bigger') {
+      const band = [[2, 5], [1.6, 2.5], [1.35, 1.8], [1.18, 1.45], [1.05, 1.25]][lv], pool = UN.filter(c => c.rank && c.rank <= 175);
+      L.duels = []; L.cur = 0; let guard = 0;
+      while (L.duels.length < 5 && guard++ < 5000) { const a = pick(r, pool), b = pick(r, pool); if (a.c === b.c || used.has(a.c) || used.has(b.c)) continue; const q = Math.max(a.ar, b.ar) / Math.min(a.ar, b.ar); if (q < band[0] || q > band[1]) continue; used.add(a.c); used.add(b.c); L.duels.push([a.c, b.c]); }
+    }
+    if (kind === 'pin') {
+      const ranked = UN.filter(c => c.rank);
+      const bands = [ranked.filter(c => c.rank <= 35), ranked.filter(c => c.rank > 35 && c.rank <= 85), ranked.filter(c => c.rank > 85 && c.rank <= 135), ranked.filter(c => c.rank > 135 && c.rank <= 172), ranked.filter(c => c.ar < 5000 && !['VAT', 'MCO', 'NRU'].includes(c.c))];
+      L.code = take(bands[lv]).c; L.pin = null; L.km = null;
+    }
+    return L;
+  });
+}
+let S = P.games[dayNum()];
+function fresh() { S = {day: dayNum(), idx: 0, levels: build()}; P.games[S.day] = S; persist(); }
+if (!S) fresh();
+function reloadToday() { S = P.games[dayNum()]; if (!S) { S = {day: dayNum(), idx: 0, levels: build()}; P.games[S.day] = S; } lastIdx = -1; render(false); }
+const lvl = () => S.levels[S.idx], total = () => S.levels.reduce((a, l) => a + l.pts, 0), allDone = () => S.levels.every(l => l.done);
+const save = () => persist();
+const expertFor = L => !!prefs.expert && ['flag', 'capital', 'whose', 'borders'].includes(L.kind);
+const stamped = L => L.done && L.pts >= L.max * STAMP_SHARE;
+
+/* ---------- passport book ---------- */
+const book = () => P.book;
+function addToBook(code, kind) {
+  if (!code || !BOOK.some(c => c.c === code)) return false;
+  const b = book(); if (b[code]) return false;
+  b[code] = {d: S.day, k: kind}; persist(); return true;
+}
+function openBook() {
+  const b = book(), got = BOOK.filter(c => b[c.c]).length, pct = got / BOOK.length;
+  const C = 2 * Math.PI * 40;
+  $('dBook').innerHTML = '<div class="sheet" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
+    '<h2>My passport</h2><div class="bookhead"><svg class="ring" viewBox="0 0 92 92"><circle cx="46" cy="46" r="40" fill="none" stroke="var(--surface2)" stroke-width="9"/><circle cx="46" cy="46" r="40" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + (C * pct) + ' ' + C + '" transform="rotate(-90 46 46)"/></svg>' +
+    '<div><div class="n">' + got + ' <span style="font-size:18px;color:var(--muted)">/ ' + BOOK.length + '</span></div><p>countries stamped. Get a country right in any challenge to add it to your book.</p></div></div>' +
+    '<div class="js-acct" data-where="book"></div>' +
+    REGIONS.map(reg => {
+      const list = BOOK.filter(c => c.r === reg).sort((a, z) => a.n.localeCompare(z.n)), n = list.filter(c => b[c.c]).length;
+      return '<div class="region"><h4>' + reg + '<span>' + n + ' / ' + list.length + '</span></h4><div class="pbar"><i style="width:' + (n / list.length * 100) + '%"></i></div><div class="tiles">' +
+        list.map(c => '<div class="tile' + (b[c.c] ? (b[c.c].d === S.day ? ' new' : '') : ' no') + '" title="' + esc(c.n) + (b[c.c] ? ' · stamped on No. ' + b[c.c].d : '') + '">' + flag(c.c) + '<span>' + esc(c.n) + '</span></div>').join('') + '</div></div>';
+    }).join('') + '</div>';
+  openDlg($('dBook')); renderAll();
+}
+
+/* ---------- history / streak ---------- */
+function dayComplete() {   // streak freezes for account holders + today's scoreboard
+  if (Account.signedIn()) { const st = streak(); if (st > 0 && st % 7 === 0 && !P.fz.earned[S.day] && freezes() < 2) { P.fz.earned[S.day] = 1; persist(); setTimeout(() => toast('' + st + ' days in a row: streak freeze earned'), 2200); } }
+  submitScore(S.day, total());
+}
+
+/* ---------- outline + pin renderers ---------- */
+const outline = Outline($('map'));
+const Pin = (() => {
+  const canvas = $('pinmap'), ctx = canvas.getContext('2d'), proj = G.geoEqualEarth(), gp = G.geoPath(proj);
+  let W = 0, H = 0, DPR = 1, colors = readColors(), base = null, view = {k: 1, tx: 0, ty: 0}, raf = 0, L = null;
+  function build() { proj.fitExtent([[6, 6], [W - 6, H - 6]], {type: 'Sphere'}); base = {bounds: gp.bounds({type: 'Sphere'}), sphere: new Path2D(gp({type: 'Sphere'})), grat: new Path2D(gp(G.geoGraticule10())), land: new Path2D(feats.map(f => gp(f) || '').join('')), byId: new Map()}; }
+  const featPath = code => { const id = byCode.get(code).g; if (!base.byId.has(id)) base.byId.set(id, new Path2D(gp(featById.get(id)) || '')); return base.byId.get(id); };
+  function clamp() { view.k = Math.min(60, Math.max(1, view.k)); const b = base.bounds, k = view.k; const ax = (lo, hi, size, t) => { lo *= k; hi *= k; return hi - lo <= size ? (size - (hi - lo)) / 2 - lo : Math.min(-lo, Math.max(size - hi, t)); }; view.tx = ax(b[0][0], b[1][0], W, view.tx); view.ty = ax(b[0][1], b[1][1], H, view.ty); }
+  function solve(t) { const s = {...view}; Object.assign(view, t); clamp(); const o = {...view}; Object.assign(view, s); return o; }
+  function home() { const b = base.bounds, mh = b[1][1] - b[0][1], k = Math.max(1, Math.min(2.2, (H - 20) / mh * .92)); return solve({k, tx: W / 2 - (b[0][0] + b[1][0]) / 2 * k, ty: H / 2 - (b[0][1] + b[1][1]) / 2 * k}); }
+  function fit(pts) { const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys); const k = Math.min(30, Math.max(1, .6 * Math.min(W / Math.max(x1 - x0, 4), H / Math.max(y1 - y0, 4)))); return solve({k, tx: W / 2 - (x0 + x1) / 2 * k, ty: H / 2 - (y0 + y1) / 2 * k}); }
+  function draw() {
+    if (!base || !L) return; const {k, tx, ty} = view;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H); ctx.setTransform(DPR * k, 0, 0, DPR * k, DPR * tx, DPR * ty);
+    ctx.fillStyle = colors.ocean; ctx.fill(base.sphere); ctx.strokeStyle = colors.grat; ctx.lineWidth = .5 / k; ctx.stroke(base.grat);
+    ctx.fillStyle = colors.land; ctx.fill(base.land); ctx.strokeStyle = colors.landEdge; ctx.lineWidth = .5 / k; ctx.stroke(base.land);
+    if (L.done) { ctx.fillStyle = L.km === 0 ? colors.hit : colors.ink; ctx.fill(featPath(L.code)); ctx.lineWidth = 1.2 / k; ctx.strokeStyle = colors.hit; ctx.stroke(featPath(L.code)); }
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const scr = ll => { const p = proj(ll); return [p[0] * k + tx, p[1] * k + ty]; };
+    if (L.done && L.at && L.km > 0) { const a = scr(L.pin), b = scr(L.at); ctx.setLineDash([5, 5]); ctx.strokeStyle = colors.ink; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); ctx.setLineDash([]); }
+    if (L.pin) { const [x, y] = scr(L.pin); ctx.fillStyle = colors.accent; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.bezierCurveTo(x - 11, y - 14, x - 9, y - 26, x, y - 26); ctx.bezierCurveTo(x + 9, y - 26, x + 11, y - 14, x, y); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y - 18, 3.5, 0, 7); ctx.fill(); }
+  }
+  function animateTo(t, ms = 900) { cancelAnimationFrame(raf); const from = {...view}, t0 = performance.now(), ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; const step = now => { const p = Math.min(1, (now - t0) / ms), e = ease(p); view.k = Math.exp(Math.log(from.k) + (Math.log(t.k) - Math.log(from.k)) * e); view.tx = from.tx + (t.tx - from.tx) * e; view.ty = from.ty + (t.ty - from.ty) * e; draw(); if (p < 1) raf = requestAnimationFrame(step); }; raf = requestAnimationFrame(step); }
+  function zoomAt(f, x, y) { const k2 = Math.min(60, Math.max(1, view.k * f)), q = k2 / view.k; view.tx = x - (x - view.tx) * q; view.ty = y - (y - view.ty) * q; view.k = k2; clamp(); draw(); }
+  function reveal(anim) { const cl = GK.cluster(L.code), b = gp.bounds(cl ? cl.geom : featById.get(byCode.get(L.code).g)), t = fit([b[0], b[1], proj(L.pin)]); anim ? animateTo(t, 1100) : (Object.assign(view, t), draw()); }
+  function resize() { const r = canvas.getBoundingClientRect(); if (!r.width) return; cancelAnimationFrame(raf); DPR = Math.min(devicePixelRatio || 1, 2.5); W = r.width; H = r.height; canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR); build(); view = home(); if (L && L.done) reveal(false); else draw(); }
+  new ResizeObserver(resize).observe(canvas);
+  // gestures
+  const ptrs = new Map(); let g = null;
+  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, {x: e.offsetX, y: e.offsetY}); g = {moved: false, start: {x: e.offsetX, y: e.offsetY}, view: {...view}}; if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; g.dist = Math.hypot(a.x - b.x, a.y - b.y); g.mid = {x: (a.x + b.x) / 2, y: (a.y + b.y) / 2}; g.moved = true; } });
+  canvas.addEventListener('pointermove', e => { if (!ptrs.has(e.pointerId) || !g) return; ptrs.set(e.pointerId, {x: e.offsetX, y: e.offsetY}); if (ptrs.size === 2 && g.dist) { const [a, b] = [...ptrs.values()]; view = {...g.view}; zoomAt(Math.hypot(a.x - b.x, a.y - b.y) / g.dist, g.mid.x, g.mid.y); return; } const dx = e.offsetX - g.start.x, dy = e.offsetY - g.start.y; if (Math.hypot(dx, dy) > 6) g.moved = true; if (g.moved && ptrs.size === 1) { view.tx = g.view.tx + dx; view.ty = g.view.ty + dy; clamp(); draw(); } });
+  const up = e => { if (!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId); if (!ptrs.size && g && !g.moved && e.type === 'pointerup') place(e.offsetX, e.offsetY); if (!ptrs.size) g = null; };
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('wheel', e => { e.preventDefault(); zoomAt(Math.exp(-e.deltaY * .002), e.offsetX, e.offsetY); }, {passive: false});
+  $('zIn').onclick = () => zoomAt(2, W / 2, H / 2); $('zOut').onclick = () => zoomAt(.5, W / 2, H / 2); $('zReset').onclick = () => animateTo(home(), 500);
+  function place(x, y) { if (!L || L.done) return; const bx = (x - view.tx) / view.k, by = (y - view.ty) / view.k, ll = proj.invert([bx, by]); if (!ll || !isFinite(ll[0])) return; const back = proj(ll); if (!back || Math.hypot(back[0] - bx, back[1] - by) > 1) return; L.pin = ll; save(); draw(); render(); }
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { colors = readColors(); draw(); });
+  return {use(l, fresh) { L = l; if (fresh && base) { cancelAnimationFrame(raf); view = home(); } if (base) { if (L.done) reveal(false); else draw(); } }, reveal, draw, resize, placeLL(lon, lat) { const p = proj([lon, lat]); place(p[0] * view.k + view.tx, p[1] * view.k + view.ty); }};
+})();
+
+/* ---------- rendering ---------- */
+let lastIdx = -1;
+function render(animate) {
+  $('no').textContent = S.day; $('date').textContent = fmtDate(); if (!$('total').dataset.anim) $('total').textContent = total();
+  { const parked = allDone(), prog = parked ? 1 : (S.idx + (S.levels[S.idx].done ? .5 : -.5)) / 4;
+    $('steps').innerHTML = '<span class="trail" aria-hidden="true"></span><span class="jet' + (parked ? ' parked' : '') + '" aria-hidden="true">' + ico('plane') + '</span>' + S.levels.map((l, i) => { const now = !l.done && i === S.idx;
+      return '<li class="fs' + (l.done ? ' done s-' + clsFor(l.pts, l.max) : now ? ' now' : '') + '" aria-label="' + GAMES[l.kind].name + ', ' + (l.done ? l.pts + ' of ' + l.max : l.max + ' points') + '"><span class="fsn">' + (l.done ? l.pts : ico(l.kind)) + '</span><span class="fsl">' + GAMES[l.kind].short + '<small>' + (l.done ? '/' + l.max : l.max) + '</small></span></li>'; }).join('');
+    const el = $('steps'), prev = el._prog; el.style.setProperty('--prog', prev == null ? prog : prev); if (prev !== prog) requestAnimationFrame(() => requestAnimationFrame(() => el.style.setProperty('--prog', prog))); el._prog = prog; }
+  const L = lvl(), ex = expertFor(L), isNew = lastIdx !== S.idx; lastIdx = S.idx;
+  $('lvtag').innerHTML = 'Stamp ' + (S.idx + 1) + ' · <b>' + GAMES[L.kind].name + '</b> · ' + L.max + ' pts' + (ex ? ' <span class="badge">' + ico('expert') + ' Expert</span>' : '');
+  // hint button
+  const hintable = L.kind !== 'bigger' && !(L.kind === 'odd' && L.options.length - L.tries.length <= 2);
+  $('bHint').hidden = L.done || !hintable;
+  $('bHint').disabled = L.hint; $('bHint').innerHTML = ico('hint') + (L.hint ? 'Hint used' : 'Hint · −' + Math.round(L.max * HINT_COST));
+  // surfaces
+  $('map').style.visibility = L.kind === 'outline' ? 'visible' : 'hidden';
+  $('pinWrap').hidden = L.kind !== 'pin';
+  $('pane').innerHTML = ''; $('pane').hidden = ['outline', 'pin'].includes(L.kind); $('chips').innerHTML = '';
+  $('form').hidden = L.done || !(L.kind === 'outline' || (ex && L.kind !== 'capital'));
+  $('capForm').hidden = L.done || !(ex && L.kind === 'capital');
+  $('opts').hidden = !['flag', 'capital', 'whose', 'borders', 'odd', 'bigger'].includes(L.kind) || ex;
+  $('bLock').hidden = L.kind !== 'pin' || L.done; $('bLock').disabled = !L.pin;
+  $('msg').textContent = '';
+  VIEWS[L.kind](L, animate, isNew);
+  // hint chip (shared)
+  if (L.hint && HINT_TEXT[L.kind]) $('chips').insertAdjacentHTML('beforeend', '<span class="chip">' + ico('hint') + ' ' + HINT_TEXT[L.kind](L, ex) + '</span>');
+  $('stampBox').innerHTML = stamped(L) ? '<div class="stamp">Stamped</div>' : '';
+  $('nextBox').innerHTML = L.done ? '<div class="next"><div class="t"><b>' + doneTitle(L) + '</b>' + doneLine(L) + '</div>' + (S.idx < 4 ? '<button class="btn accent" id="bNext">Next →</button>' : '<button class="btn accent" id="bEnd">Score</button>') + '</div>' : '';
+  if ($('bNext')) $('bNext').onclick = () => { S.idx++; save(); render(true); };
+  if ($('bEnd')) $('bEnd').onclick = showResults;
+  $('bResults').hidden = !(allDone() && S.idx === 4);
+}
+function doneTitle(L) {
+  if (L.kind === 'bigger') return L.tries.filter(Boolean).length + ' of 5 right · +' + L.pts;
+  const c = byCode.get(L.code), head = L.kind === 'capital' ? esc(c.cap) + ', ' + esc(c.n) : L.kind === 'whose' ? esc(c.cap) + ' → ' + esc(c.n) : L.kind === 'odd' ? esc(c.n) + ' doesn’t border ' + esc(byCode.get(L.subject).n) : esc(c.n);
+  return flag(L.code) + ' ' + head + (L.pts ? ' · +' + L.pts : '');
+}
+function doneLine(L) {
+  const bits = [];
+  if (L.kind === 'pin') bits.push(L.km === 0 ? 'Bullseye: inside the border.' : fmtKm(L.km) + ' away.');
+  bits.push(stamped(L) ? 'Stamp earned.' : L.pts ? 'Points, but no stamp.' : 'No points this time.');
+  if (L.newBook) bits.push(ico('book') + ' New in your passport!');
+  return '<span style="font-size:13px">' + bits.join(' ') + '</span>';
+}
+
+/* hints: one per stamp, costs 25% of its value */
+const halfOut = L => { const wrong = L.options.filter(o => o !== L.code); return new Set(wrong.slice(0, Math.floor(wrong.length / 2))); };   // stable: same options removed every render
+const HINT_TEXT = {
+  outline: L => 'Somewhere in ' + esc(byCode.get(L.code).sr),
+  flag: L => 'Somewhere in ' + esc(byCode.get(L.code).sr),
+  capital: (L, ex) => ex ? 'Starts with “' + esc(byCode.get(L.code).cap[0]) + '”' : 'Half the wrong answers removed',
+  whose: (L, ex) => ex ? 'Somewhere in ' + esc(byCode.get(L.code).sr) : 'Half the wrong answers removed',
+  borders: L => 'Somewhere in ' + esc(byCode.get(L.code).sr),
+  odd: () => 'One wrong answer removed',
+  pin: L => 'Look in ' + esc(byCode.get(L.code).sr),
+};
+$('bHint').onclick = () => { const L = lvl(); if (L.done || L.hint) return; L.hint = true; save(); render(false); toast('Hint used: −' + Math.round(L.max * HINT_COST) + ' points max'); };
+
+/* finishing a stamp */
+function finish(L, factor, bookCode) {
+  const before = total();
+  L.done = true; L.pts = Math.round(L.max * factor * (L.hint ? 1 - HINT_COST : 1));
+  if (L.pts > 0 && bookCode) L.newBook = addToBook(bookCode, L.kind);
+  save(); if (allDone()) dayComplete();
+  render(true);
+  // the satisfying bit
+  if (L.pts > 0) {
+    FX.sfx.right(); FX.floatPts('+' + L.pts, clsFor(L.pts, L.max) === 'hit' ? 'hit' : '');
+    FX.countUp($('total'), before, total(), 650);
+    $('scorePill').classList.remove('bump'); void $('scorePill').offsetWidth; $('scorePill').classList.add('bump');
+    if (stamped(L)) setTimeout(() => FX.sfx.stamp(), 260);
+    if (factor === 1 && !L.hint) setTimeout(() => FX.confetti(L.lv >= 3 ? 110 : 60), 120);
+    $('stage').classList.remove('flash-ok', 'flash-no'); void $('stage').offsetWidth; $('stage').classList.add('flash-ok');
+  } else { FX.sfx.wrong(); $('stage').classList.remove('flash-ok', 'flash-no'); void $('stage').offsetWidth; $('stage').classList.add('flash-no'); }
+}
+function nudgeWrong() { FX.sfx.wrong(); const o = $('opts'); o.classList.remove('shake'); void o.offsetWidth; o.classList.add('shake'); }
+
+/* ---------- the eight games ---------- */
+const VIEWS = {
+  outline(L, animate) {
+    const misses = L.tries.filter(g => g !== L.code).length, A = byCode.get(L.code), tint = {};
+    for (const g of L.tries) if (g !== L.code) tint[g] = guessFeedback(g, L.code).cls;
+    outline.set({code: L.code, zoom: L.done ? .5 : [0, .4, .75][Math.min(misses, 2)], others: misses || L.done ? 1 : 0, labels: [...L.tries.filter(g => g !== L.code), ...(misses >= 2 || L.done ? A.b : [])], tint, reveal: L.done && L.pts > 0}, animate);
+    $('chips').innerHTML = L.tries.filter(g => g !== L.code).map(g => { const f = guessFeedback(g, L.code), c = byCode.get(g); return '<span class="chip c-' + f.cls + '">' + flag(g) + ' ' + esc(c.n) + ' · ' + (f.border ? 'touching' : fmtKm(f.km)) + ' ' + arrow(f.deg) + '</span>'; }).join('');
+    $('inp').placeholder = 'Guess ' + (L.tries.length + 1) + ' of 3 — which country?';
+  },
+  flag(L) { pane('<div class="k">Whose flag is this?</div><div class="flagimg" role="img" aria-label="A country’s flag" style="background-image:' + flagUrl(L.code) + '"></div>'); choices(L, c => esc(c.n)); },
+  capital(L) { const A = byCode.get(L.code); pane('<div class="k">Capital city</div><div class="q">What’s the capital of<br>' + flag(L.code) + ' ' + esc(A.n) + '?</div>'); choices(L, c => esc(c.cap), true); },
+  whose(L) { const A = byCode.get(L.code); pane('<div class="k">Whose capital?</div><div class="q">' + esc(A.cap) + '<br><span style="font-size:17px;color:var(--muted);font-family:var(--sans);font-weight:500">is the capital of which country?</span></div>'); choices(L, c => esc(c.n), false, true); },
+  borders(L) { const A = byCode.get(L.code); pane('<div class="k">Borders</div><div class="q">Which country touches all of these?</div><div class="nb">' + A.b.map(b => byCode.get(b)).filter(Boolean).map(c => '<span>' + flag(c.c) + esc(c.n) + '</span>').join('') + '</div>'); choices(L, c => esc(c.n), false, true); },
+  odd(L) { const S0 = byCode.get(L.subject); pane('<div class="k">Odd one out</div><div class="q">Which of these does <u>not</u> border<br>' + flag(L.subject) + ' ' + esc(S0.n) + '?</div>'); choices(L, c => esc(c.n), false, true); },
+  bigger(L) {
+    const i = L.cur, [a, b] = L.duels[i], A = byCode.get(a), B = byCode.get(b), answered = L.tries.length > i, big = A.ar >= B.ar ? a : b, mx = Math.max(A.ar, B.ar);
+    const side = c => '<div class="side">' + flag(c.c) + '<b>' + esc(c.n) + '</b><div class="bar"><i style="width:' + (answered ? Math.round(c.ar / mx * 100) : 0) + '%"></i></div><div class="area">' + (answered ? Math.round(c.ar).toLocaleString() + ' km²' : '') + '</div></div>';
+    pane('<div class="k">Which is bigger by area?</div><div class="rounds">' + L.duels.map((_, j) => '<i class="' + (j < L.tries.length ? (L.tries[j] ? 'ok' : 'no') : j === i ? 'now' : '') + '"></i>').join('') + '</div><div class="duel">' + side(A) + side(B) + '</div>');
+    $('opts').className = 'opts'; $('opts').hidden = L.done;
+    $('opts').innerHTML = [a, b].map(code => '<button class="opt' + (answered && code === big ? ' right' : '') + '" data-c="' + code + '"' + (answered ? ' disabled' : '') + '>' + flag(code) + esc(byCode.get(code).n) + '</button>').join('');
+    $('opts').onclick = e => {
+      const btn = e.target.closest('.opt'); if (!btn || btn.disabled || L.done || L.tries.length > L.cur) return;
+      const ok = btn.dataset.c === big; L.tries.push(ok); save(); render(false); ok ? FX.sfx.right() : FX.sfx.wrong(); if (ok) FX.floatPts('✓', 'hit');
+      setTimeout(() => { if (L.tries.length >= 5) finish(L, BIGGER_PAY[L.tries.filter(Boolean).length], null); else { L.cur = L.tries.length; save(); render(false); } }, 1100);
+    };
+  },
+  pin(L, animate, fresh) {
+    const A = byCode.get(L.code);
+    $('find').innerHTML = '<small>Pin it</small> ' + flag(L.code) + ' ' + esc(A.n);
+    Pin.use(L, fresh);
+  },
+};
+function pane(html) { $('pane').innerHTML = html; }
+// multiple choice (or typed, in Expert mode). Two tries: full points, then 40%.
+function choices(L, label, isCap, withFlag) {
+  const ex = expertFor(L);
+  let removed = new Set();   // a hint removes wrong options: half of them (Capital, Whose capital?) or one (Odd one out)
+  if (L.hint && !ex && (L.kind === 'capital' || L.kind === 'whose')) removed = halfOut(L);
+  if (L.hint && L.kind === 'odd') removed = new Set([L.options.find(o => o !== L.code)]);
+  if (ex) {
+    $('chips').innerHTML = L.tries.map(t => '<span class="chip c-far">✕ ' + esc(isCap ? t : byCode.get(t) ? byCode.get(t).n : t) + '</span>').join('');
+    $(isCap ? 'capInp' : 'inp').placeholder = (isCap ? 'Type the capital' : 'Type the country') + ' (try ' + (L.tries.length + 1) + ' of 2)';
+    if (L.done) { $('opts').hidden = false; $('opts').className = 'opts'; $('opts').innerHTML = '<button class="opt right" disabled>' + (isCap ? esc(byCode.get(L.code).cap) : flag(L.code) + esc(byCode.get(L.code).n)) + '</button>'; }
+    return;
+  }
+  $('opts').className = 'opts' + (L.options.length > 4 ? ' six' : ''); $('opts').hidden = false;
+  $('opts').innerHTML = L.options.filter(o => !removed.has(o) || L.done).map(code => {
+    const c = byCode.get(code), st = L.tries.includes(code) ? (code === L.code ? ' right' : ' wrong') : (L.done && code === L.code ? ' right' : '');
+    return '<button class="opt' + st + '" data-c="' + code + '"' + (L.done || L.tries.includes(code) ? ' disabled' : '') + '>' + (withFlag && L.kind !== 'flag' ? flag(code) : '') + label(c) + '</button>';
+  }).join('');
+  $('opts').onclick = e => { const b = e.target.closest('.opt'); if (!b || b.disabled || L.done) return; answer(L, b.dataset.c); };
+}
+function answer(L, guess) {
+  L.tries.push(guess);
+  const right = guess === L.code || (L.kind === 'capital' && typeof guess === 'string' && capMatch(guess, L.code));
+  if (right) return finish(L, L.tries.length === 1 ? 1 : .4, L.code);
+  if (L.tries.length >= 2) return finish(L, 0, null);
+  save(); render(false); nudgeWrong(); toast('Not quite. One more try');
+}
+/* ---- scoring rules ---- */
+// Bigger: 5 coin-flip duels. Linear pay gave guessers 50% on average and a stamp half the time; this curve pays for knowledge.
+const BIGGER_PAY = [0, 0, .15, .4, .7, 1];
+// Pin: distance decay scaled to the country, so 150 km off Belgium costs more than 150 km off Brazil.
+const pinScale = code => Math.min(900, Math.max(250, Math.sqrt(byCode.get(code).ar || 0) * 1.5));
+const pinFactor = (km, code) => km <= 25 ? 1 : Math.exp(-km / pinScale(code));
+// Capitals: accept official alternates, seats of government and common spellings, plus a single typo on longer names.
+const CAP_ALT = {ZAF: ['Cape Town', 'Bloemfontein'], BOL: ['La Paz'], CIV: ['Abidjan'], LKA: ['Sri Jayawardenepura Kotte', 'Kotte'], BEN: ['Cotonou'], TZA: ['Dar es Salaam'], NLD: ['The Hague'], MYS: ['Putrajaya'], UKR: ['Kiev'], USA: ['Washington', 'Washington DC'], IND: ['Delhi'], MMR: ['Nay Pyi Taw', 'Naypyitaw'], KAZ: ['Nur-Sultan'], SMR: ['San Marino'], KIR: ['Tarawa'], SWZ: ['Mbabane'], BDI: ['Bujumbura'], PSE: ['East Jerusalem'], CHE: ['Bern', 'Berne'], MDV: ['Male'], STP: ['Sao Tome'], VAT: ['Vatican']};
+function lev(a, b) { if (Math.abs(a.length - b.length) > 1) return 9; const d = Array.from({length: b.length + 1}, (_, j) => j); for (let i = 1; i <= a.length; i++) { let prev = d[0]; d[0] = i; for (let j = 1; j <= b.length; j++) { const t = d[j]; d[j] = Math.min(d[j] + 1, d[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = t; } } return d[b.length]; }
+function capMatch(guess, code) {
+  const g = norm(guess); if (!g) return false;
+  return [byCode.get(code).cap, ...(CAP_ALT[code] || [])].some(c => { const n = norm(c), bare = n.replace(/city$/, '').replace(/^cityof/, '');
+    return g === n || (bare.length > 3 && g === bare) || (n.length >= 5 && lev(g, n) <= 1); });
+}
+const norm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+
+// typed country answers (Outline, and Expert mode)
+autocomplete({input: $('inp'), list: $('list'), form: $('form'), msg: $('msg'), used: () => lvl().tries.filter(t => typeof t === 'string'), onPick: code => {
+  const L = lvl(); if (L.done) return;
+  if (L.kind === 'outline') {
+    L.tries.push(code);
+    if (code === L.code) return finish(L, [1, .6, .3][L.tries.length - 1], L.code);
+    if (L.tries.length >= 3) return finish(L, 0, null);
+    save(); render(true); FX.sfx.wrong();
+  } else answer(L, code);
+}});
+$('capForm').addEventListener('submit', e => { e.preventDefault(); const v = $('capInp').value.trim(); if (!v) return; $('capInp').value = ''; answer(lvl(), v); });
+$('bLock').onclick = () => {
+  const L = lvl(); if (!L.pin || L.done) return;
+  const inside = G.geoContains(featById.get(byCode.get(L.code).g), L.pin), gap = inside ? {km: 0, at: null} : pointGapKm(L.pin, L.code);
+  L.km = gap.km; L.at = gap.at;
+  finish(L, pinFactor(gap.km, L.code), gap.km <= 300 ? L.code : null);
+  Pin.reveal(true);
+};
+
+/* ================= private leagues: your group chat's own table ================= */
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const cleanName = (s, max) => String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
+const cleanCode = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+const myLeagues = () => P.prefs.leagues || (P.prefs.leagues = []);
+const weekStart = n => n - ((GK.dayDate(n).getUTCDay() + 6) % 7);   // Monday (UTC)
+const sbRpc = async (fn, body) => { const r = await withTimeout(fetch(SB.url + '/rest/v1/rpc/' + fn, {method: 'POST', headers: sbHeaders(), body: JSON.stringify(body)})); if (!r.ok) throw new Error('rpc ' + r.status); const t = await r.text(); return t ? JSON.parse(t) : null; };
+const League = {
+  async create(name, me) {
+    const b = await backend(); if (!b) throw new Error('offline');
+    if (b.kind === 'supabase') return sbRpc('passport_create_league', {n: name, p: playerId(), pn: me});
+    if (!b.uid) throw new Error('signin');
+    for (let i = 0; i < 8; i++) {
+      const code = Array.from({length: 6}, () => CODE_CHARS[Math.random() * 32 | 0]).join(''), ref = b.db.doc('leagues/' + code);
+      if ((await withTimeout(ref.get())).exists) continue;
+      await withTimeout(ref.set({name, created: Date.now()}));
+      await withTimeout(b.db.doc('leagues/' + code + '/members/' + b.uid).set({name: me, joined: Date.now()}));
+      return code;
+    }
+    throw new Error('code');
+  },
+  async join(code, me) {
+    const b = await backend(); if (!b) throw new Error('offline');
+    if (b.kind === 'supabase') return sbRpc('passport_join_league', {c: code, p: playerId(), pn: me});
+    if (!b.uid) throw new Error('signin');
+    const snap = await withTimeout(b.db.doc('leagues/' + code).get()); if (!snap.exists) return null;
+    await withTimeout(b.db.doc('leagues/' + code + '/members/' + b.uid).set({name: me, joined: Date.now()}));
+    return snap.data().name;
+  },
+  async leave(code) {
+    const b = await backend(); if (!b) return;
+    if (b.kind === 'supabase') await sbRpc('passport_leave_league', {c: code, p: playerId()});
+    else if (b.uid) await withTimeout(b.db.doc('leagues/' + code + '/members/' + b.uid).delete());
+  },
+  async board(code, d0, d1) {   // → [{k, name, me, scores: {day: score}}]
+    const b = await backend(); if (!b) throw new Error('offline');
+    const m = new Map();
+    if (b.kind === 'supabase') {
+      for (const r of await sbRpc('passport_league_board', {c: code, me: playerId(), d0, d1}) || []) {
+        if (!m.has(r.k)) m.set(r.k, {k: r.k, name: r.member, me: r.is_me, scores: {}});
+        if (r.day != null) m.get(r.k).scores[r.day] = +r.score;
+      }
+    } else {
+      const snap = await withTimeout(b.db.collection('leagues/' + code + '/members').get());
+      await Promise.all(snap.docs.map(async d => {
+        const p = await withTimeout(b.db.doc('pp/' + d.id).get()).catch(() => null), data = p && p.exists ? p.data() : {}, scores = {};
+        for (let x = d0; x <= d1; x++) if (data['d' + x] != null) scores[x] = +data['d' + x];
+        m.set(d.id, {k: d.id, name: cleanName(d.data().name, 20) || 'Traveller', me: d.id === b.uid, scores});
+      }));
+    }
+    return [...m.values()];
+  },
+};
+
+let invite = null;
+async function openLeagues(msg, focus) {
+  openDlg($('dLeague'));
+  const b = await backend(), ok = b && (b.kind === 'supabase' || b.uid);
+  $('lgOffline').hidden = !!ok; $('lgForms').hidden = !ok;
+  $('lgName').value = P.prefs.name || '';
+  if (invite) { $('lgCode').value = invite; $('lgJoinBox').classList.add('hl'); }
+  lgMsg(msg || '');
+  if (focus === 'create') setTimeout(() => (P.prefs.name ? $('lgNew') : $('lgName')).focus(), 250);
+  renderLeagues();
+}
+function lgMsg(m, bad) { const el = $('lgMsg'); el.textContent = m; el.style.color = bad ? 'var(--far)' : 'var(--hit)'; }
+function needName() { const n = cleanName($('lgName').value, 20); if (!n) { lgMsg('Add the name your friends will see first.', true); $('lgName').focus(); return null; } P.prefs.name = n; persist(); return n; }
+const lgBusy = on => { $('lgCreate').disabled = $('lgJoin').disabled = on; };
+$('lgCreate').onclick = async () => {
+  const me = needName(); if (!me) return; const name = cleanName($('lgNew').value, 30);
+  if (!name) { lgMsg('Give your league a name, e.g. “The Ashtons”.', true); $('lgNew').focus(); return; }
+  lgBusy(true);
+  try { const code = await League.create(name, me); myLeagues().unshift({code, name}); persist(); $('lgNew').value = ''; lgMsg('League created. Now invite your group chat below.'); FX.sfx.stamp(); renderLeagues(code); }
+  catch (e) { lgMsg(e.message === 'signin' ? 'Sign in to Claude to create leagues here.' : 'Couldn’t create the league just now. Try again in a moment.', true); }
+  lgBusy(false);
+};
+$('lgJoin').onclick = async () => {
+  const me = needName(); if (!me) return; const code = cleanCode($('lgCode').value);
+  if (code.length !== 6) { lgMsg('League codes are 6 letters and numbers.', true); return; }
+  lgBusy(true);
+  try {
+    const name = await League.join(code, me);
+    if (!name) lgMsg('No league with code ' + code + '. Check it with whoever invited you.', true);
+    else {
+      if (!myLeagues().some(l => l.code === code)) myLeagues().unshift({code, name: cleanName(name, 30)});
+      persist(); invite = null; $('lgCode').value = ''; $('lgJoinBox').classList.remove('hl');
+      if (location.hash.startsWith('#join-')) try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+      lgMsg('You’re in “' + cleanName(name, 30) + '”. Play today’s passport to get on the table.'); FX.sfx.right(); renderLeagues(code);
+    }
+  } catch (e) { lgMsg('Couldn’t join just now. Try again in a moment.', true); }
+  lgBusy(false);
+};
+async function renderLeagues(focusCode) {
+  const box = $('lgList'), list = myLeagues(); $('lgStartHead').textContent = list.length ? 'Start another league' : 'Start a league';
+  if (!list.length) { box.innerHTML = ''; return; }
+  const T = dayNum(), w0 = weekStart(T);
+  box.innerHTML = list.map(l => '<section class="lcard" data-code="' + l.code + '"><header><b>' + esc(l.name) + '</b><span class="lcode">' + l.code + '</span></header><div class="lbody"><p class="fine">Loading…</p></div><div class="row"><button class="btn accent lInvite">Invite friends</button><button class="btn ghost lLeave">Leave</button></div></section>').join('');
+  await Promise.all(list.map(async l => {
+    const el = box.querySelector('[data-code="' + l.code + '"] .lbody'); if (!el) return;
+    try { el.innerHTML = boardHtml(await League.board(l.code, w0, T), T, w0); } catch (e) { el.innerHTML = '<p class="fine">Couldn’t load this league just now.</p>'; }
+  }));
+  if (focusCode) { const c = box.querySelector('[data-code="' + focusCode + '"]'); if (c) c.scrollIntoView({block: 'nearest', behavior: 'smooth'}); }
+}
+const medal = i => '<span class="md' + (i < 3 ? ' m' + (i + 1) : '') + '">' + (i + 1) + '</span>';
+function boardHtml(ms, T, w0) {
+  const today = ms.map(m => ({...m, s: m.scores[T]})).sort((a, b) => (b.s ?? -1) - (a.s ?? -1) || a.name.localeCompare(b.name));
+  const done = today.filter(m => m.s != null);
+  const rowsToday = today.map((m, i) => '<li class="' + (m.me ? 'me' : '') + '"><span class="rk">' + (m.s != null ? medal(i) : '·') + '</span><span class="nm">' + esc(m.name) + (m.me ? ' <small>(you)</small>' : '') + '</span>' + (m.s != null ? '<span class="pts">' + m.s + '</span>' : '<span class="fine">not played yet</span>') + '</li>').join('');
+  const week = ms.map(m => { let pts = 0; for (let d = w0; d <= T; d++) pts += m.scores[d] || 0; return {...m, pts}; }).sort((a, b) => b.pts - a.pts || a.name.localeCompare(b.name));
+  const rowsWeek = week.map((m, i) => '<li class="' + (m.me ? 'me' : '') + '"><span class="rk">' + medal(i) + '</span><span class="nm">' + esc(m.name) + '</span><span class="pts">' + m.pts.toLocaleString() + '</span></li>').join('');
+  return '<h4>Today · No. ' + T + ' <span>' + done.length + ' of ' + ms.length + ' played</span></h4><ol class="lb">' + rowsToday + '</ol><h4>This week <span>since Monday</span></h4><ol class="lb">' + rowsWeek + '</ol>';
+}
+$('lgList').addEventListener('click', async e => {
+  const card = e.target.closest('.lcard'); if (!card) return; const code = card.dataset.code, l = myLeagues().find(x => x.code === code); if (!l) return;
+  if (e.target.closest('.lInvite')) {
+    const text = '✈️ Join my Passport league “' + l.name + '”. Five geography challenges a day, and we see who scores most. Code ' + code + '\n' + location.href.split('#')[0] + '#join-' + code;
+    if (navigator.share) { try { await navigator.share({text}); return; } catch (err) { if (err.name === 'AbortError') return; } }
+    GK.copy(text);
+  } else if (e.target.closest('.lLeave')) {
+    const b = e.target.closest('.lLeave'); if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Tap again'; setTimeout(() => { b.dataset.confirm = ''; b.textContent = 'Leave'; }, 3000); return; }
+    try { await League.leave(code); } catch (err) {}
+    P.prefs.leagues = myLeagues().filter(x => x.code !== code); persist(); renderLeagues();
+  }
+});
+// result screen: where you stand in each league today, or a nudge to start one
+async function leagueSummary() {
+  const box = $('resLeague'); if (!box) return;
+  const b = await backend(); if (!b || (b.kind === 'claude' && !b.uid)) { box.innerHTML = ''; return; }
+  const list = myLeagues();
+  if (!list.length) { box.innerHTML = '<div class="lnudge"><div><b>' + ico('trophy') + ' Play against your group chat</b><span>Start a private league and see who gets the most stamps each week.</span></div><button class="btn accent" id="rsStartLg">Start</button></div>'; $('rsStartLg').onclick = () => openLeagues('', 'create'); return; }
+  box.innerHTML = '<h3>Your leagues</h3><p class="fine">Loading…</p>';
+  const T = S.day, lines = await Promise.all(list.slice(0, 4).map(async l => {
+    try {
+      const ms = await League.board(l.code, T, T), played = ms.filter(m => m.scores[T] != null).sort((a, b) => b.scores[T] - a.scores[T]), i = played.findIndex(m => m.me);
+      if (i < 0) return '<li><b>' + esc(l.name) + '</b>: updating…</li>';
+      const lead = i === 0 ? (played.length > 1 ? ' · leading by ' + (played[0].scores[T] - played[1].scores[T]) : '') : ' · ' + (played[0].scores[T] - played[i].scores[T]) + ' behind ' + esc(played[0].name);
+      return '<li><span>' + medal(i) + '</span><span><b>' + esc(l.name) + '</b> · ' + ordinal(i + 1) + ' of ' + played.length + lead + (ms.length > played.length ? ' <small>(' + (ms.length - played.length) + ' still to play)</small>' : '') + '</span></li>';
+    } catch (e) { return '<li><b>' + esc(l.name) + '</b>: couldn’t load</li>'; }
+  }));
+  if (!$('dRes').open) return;
+  box.innerHTML = '<h3>Your leagues</h3><ul class="lsum">' + lines.join('') + '</ul><button class="btn ghost wide" id="rsLg" style="margin-top:8px">League tables</button>';
+  $('rsLg').onclick = () => openLeagues();
+}
+const ordinal = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : Math.min(n % 10, 4) % 4] || 'th');
+// boarding pass: who in your leagues has already flown today
+async function boardingLeagueLine() {
+  const el = $('passLeague'); if (!el || !myLeagues().length) return;
+  try {
+    const l = myLeagues()[0], T = dayNum(), ms = await League.board(l.code, T, T), played = ms.filter(m => !m.me && m.scores[T] != null).sort((a, b) => b.scores[T] - a.scores[T]);
+    if (!$('dBoard').open) return;
+    el.innerHTML = played.length ? ico('trophy') + ' <b>' + esc(played[0].name) + '</b> scored <b>' + played[0].scores[T] + '</b> today' + (played.length > 1 ? ' · ' + (played.length - 1) + ' more from ' + esc(l.name) + ' have played' : ' in ' + esc(l.name)) + '. Beat it.' : '🏆 Nobody in ' + esc(l.name) + ' has played yet. Set the score to beat.';
+    el.hidden = false;
+  } catch (e) {}
+}
+function checkInvite() { const m = /^#join-([A-Za-z0-9]{6})$/.exec(location.hash); if (!m) return false; invite = cleanCode(m[1]); document.querySelectorAll('dialog[open]').forEach(d => d.close()); openLeagues('You’ve been invited to league ' + invite + '. Add your name and tap Join.'); return true; }
+addEventListener('hashchange', checkInvite);
+
+/* ================= boarding pass: the first thing you see each day ================= */
+function showBoarding() {
+  if (document.querySelector('dialog[open]')) return;   // never cover an invite or another open screen
+  const day = S.day, first = !Object.keys(P.games).some(d => +d !== day && dayTotal(+d) != null), st = streak(), xp = xpTotal(), rk = rankOf(xp), n = Object.keys(P.book).length;
+  const bars = Array.from({length: 34}, (_, i) => '<i style="width:' + ((GK.hash('b' + day + i) % 3) + 1) + 'px"></i>').join('');
+  $('dBoard').innerHTML = '<div class="sheet board" tabindex="-1" autofocus>' +
+    '<div class="pass"><div class="pass-top"><span>' + ico('plane') + 'PASSPORT</span><span>BOARDING PASS</span></div><div class="pass-stamp" aria-hidden="true"><span>Cleared<b>No. ' + day + '</b>UTC</span></div>' +
+    '<div class="pass-row"><div><small>Flight</small><b>No. ' + day + '</b></div><div><small>Date</small><b>' + esc(fmtDate()) + '</b></div><div><small>Passenger</small><b>' + esc(P.prefs.name || 'Guest') + (P.prefs.expert ? ' ' + ico('expert') : '') + '</b></div></div>' +
+    '<div class="route">' + S.levels.map((l, i) => '<div class="stop" style="--d:' + (i * 90) + 'ms"><span class="si">' + ICON[l.kind] + '</span><span class="sn">' + GAMES[l.kind].name + '</span><span class="sp">' + l.max + '</span></div>').join('') + '</div>' +
+    (first ? '<p class="pass-note">Five quick challenges, each harder and worth more than the last. Get a country right and it’s stamped into your passport for good. <b>1,000 points</b> up for grabs.</p>'
+      : '<div class="pass-stats"><span>' + rk.svg + ' <b>' + rk.name + '</b></span><span>' + ico('flame') + ' <b>' + st + '</b> day' + (st === 1 ? '' : 's') + '</span><span>' + ico('book') + ' <b>' + n + '</b>/195</span></div>') +
+    '<div class="pass-league" id="passLeague" hidden></div><div class="tear"></div><div class="pass-foot"><div><small>Next flight in</small><b class="js-cd">--:--:--</b></div><div class="barcode" aria-hidden="true">' + bars + '</div></div></div>' +
+    '<button class="btn wide accent board-go" id="bBoard">Board ' + ico('plane') + '</button>' +
+    (first ? '<button class="linkbtn" id="bHow" style="display:block;margin:8px auto 0">How does it work?</button>' : '') + '</div>';
+  openDlg($('dBoard')); boardingLeagueLine();
+  $('bBoard').onclick = () => { FX.sfx.board(); $('dBoard').close(); P.prefs.boarded = day; persist(); };
+  if ($('bHow')) $('bHow').onclick = () => openDlg($('dHelp'));
+}
+
+/* ================= results: stamp the page, count it up, level up ================= */
+const QUAL = {hit: 'Perfect', near: 'Good', mid: 'Close', far: 'Missed'};
+async function showResults() {
+  const t = total(), stamps = S.levels.filter(stamped).length, verdict = pun(t, S.day), st = streak(), n = Object.keys(P.book).length;
+  const xpAfter = xpTotal(), xpBefore = xpAfter - t, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
+  const shareLines = ['✈️ Passport No. ' + S.day + ' · ' + t + '/1000' + (S.levels.some(expertFor) ? ' · 🎓' : ''), S.levels.map(l => EMO[clsFor(l.pts, l.max)]).join('') + '  Visited ' + stamps + ' of 5', rA.icon + ' ' + rA.name + ' · 📘 ' + n + '/195' + (st > 1 ? ' · 🔥' + st : ''), '“' + verdict + '”'];
+  const subj = l => l.kind === 'bigger' ? 'Five head-to-heads' : l.kind === 'odd' ? byCode.get(l.subject).n : byCode.get(l.code).n;
+  $('dRes').innerHTML = '<div class="sheet res" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
+    '<div class="res-kicker">Passport No. ' + S.day + ' · ' + esc(fmtDate()) + '</div>' +
+    '<div class="page">' + S.levels.map((l, i) => { const q = clsFor(l.pts, l.max); return '<div class="ink q-' + q + (animate ? '' : ' in') + '" style="--r:' + [-8, 6, -4, 9, -6][i] + 'deg"><span class="ik">' + ICON[l.kind] + '</span><span class="iname">' + esc(GAMES[l.kind].short) + '</span><b>' + l.pts + '</b><span class="iq">' + (l.pts ? QUAL[q] : 'Void') + '</span></div>'; }).join('') + '</div>' +
+    '<ul class="res-lines">' + S.levels.map(l => '<li><span>' + ICON[l.kind] + ' ' + esc(GAMES[l.kind].name) + ' <small>· ' + esc(subj(l)) + (l.hint ? ' · hint' : '') + '</small></span><b>' + l.pts + '<small>/' + l.max + '</small></b></li>').join('') + '</ul>' +
+    '<div class="tot"><b id="resTotal">' + (animate ? 0 : t) + '</b><small>/ 1000</small></div>' +
+    '<div class="pun' + (animate ? ' hide' : '') + '" id="resPun">' + esc(verdict) + '</div>' +
+    '<div class="rank" id="resRank"><div class="rk-top"><span class="rk-icon" id="rkIcon">' + (animate ? rB.svg : rA.svg) + '</span><div><small>Traveller rank</small><b id="rkName">' + (animate ? rB.name : rA.name) + '</b></div><span class="rk-xp">+' + t.toLocaleString() + ' XP</span></div>' +
+    '<div class="xpbar"><i id="xpFill" style="width:' + pctIn(animate ? xpBefore : xpAfter, animate ? rB : rA) + '%"></i></div><div class="rk-next" id="rkNext">' + nextLine(xpAfter, rA) + '</div></div>' +
+    '<div class="res-global" id="resGlobal"></div>' +
+    '<div id="resLeague"></div>' +
+    '<div class="js-acct" data-where="results"></div>' +
+    '<h3>Share</h3><pre class="sharebox">' + esc(shareLines.join('\n')) + '</pre>' +
+    '<div class="row"><button class="btn accent" id="rsCopy">Copy result</button>' + (PROTO ? '<button class="btn ghost" id="rsReplay">Replay (prototype)</button>' : '') + '</div>' +
+    '<div class="cd">Next flight in<b class="js-cd">--:--:--</b></div></div>';
+  openDlg($('dRes')); renderAll();
+  $('rsCopy').onclick = () => GK.copy(shareLines.join('\n') + '\n' + location.href.split('#')[0]);
+  if ($('rsReplay')) $('rsReplay').onclick = () => { $('dRes').close(); delete P.games[S.day]; fresh(); lastIdx = -1; render(false); };
+  // global rank (if a scoreboard is connected)
+  (async () => { await submitScore(S.day, t); leagueSummary(); let r = null; try { r = await fetchRank(S.day, t); } catch (e) {} if (!r || !$('resGlobal')) return;
+    const beat = r.total > 1 ? Math.round(r.below / (r.total - 1) * 100) : 0, place = r.total - r.below;   // place counts ties generously
+    $('resGlobal').innerHTML = r.total <= 1 ? 'You’re one of the first travellers today. Check back later to see how you compare.'
+      : r.total < 10 ? ico('globetrotter') + ' You’re <b>' + ordinal(place) + '</b> of ' + r.total + ' travellers today'
+      : beat >= 50 ? ico('globetrotter') + ' You beat <b>' + beat + '%</b> of today’s ' + r.total.toLocaleString() + ' travellers'
+      : ico('globetrotter') + ' Top <b>' + Math.max(5, Math.ceil((100 - beat) / 5) * 5) + '%</b> of today’s ' + r.total.toLocaleString() + ' travellers'; })();
+  if (!animate) return;
+  S.seenResults = true; persist();
+  // stamp, stamp, stamp… then the total, the pun and the rank bar
+  const inks = [...document.querySelectorAll('.page .ink')]; let run = 0;
+  inks.forEach((el, i) => setTimeout(() => { el.classList.add('in'); FX.sfx.stamp(); const pts = S.levels[i].pts; FX.countUp($('resTotal'), run, run + pts, 360, false); run += pts; }, 350 + i * 430));
+  const end = 350 + inks.length * 430 + 250;
+  setTimeout(() => { $('resPun').classList.remove('hide'); if (t >= 850) FX.confetti(120); if (t >= 700) FX.sfx.right(); }, end);
+  setTimeout(() => {
+    if (rA.i > rB.i) { $('xpFill').style.width = '100%'; setTimeout(() => { $('rkIcon').innerHTML = rA.svg; $('rkName').textContent = rA.name; $('resRank').classList.add('up'); $('xpFill').style.transition = 'none'; $('xpFill').style.width = '0%'; void $('xpFill').offsetWidth; $('xpFill').style.transition = ''; $('xpFill').style.width = pctIn(xpAfter, rA) + '%'; FX.sfx.rank(); FX.confetti(140); toast(rA.icon + ' Promoted to ' + rA.name + '!'); }, 700); }
+    else $('xpFill').style.width = pctIn(xpAfter, rA) + '%';
+  }, end + 500);
+}
+const pctIn = (xp, r) => r.next ? Math.round((xp - r.min) / (r.next - r.min) * 100) : 100;
+const nextLine = (xp, r) => r.next ? (r.next - xp).toLocaleString() + ' XP to <b>' + r.nextName + '</b> · ' + xp.toLocaleString() + ' XP total' : 'Top rank. The world is yours.';
+
+$('bResults').onclick = showResults; $('bScore').onclick = () => allDone() ? showResults() : toast('Finish all five stamps to see your score');
+$('bHelp').onclick = () => openDlg($('dHelp'));
+$('bBook').onclick = openBook;
+$('bLeagues').onclick = () => openLeagues();
+$('bSet').onclick = () => { $('tExpert').setAttribute('aria-checked', !!prefs.expert); $('tSound').setAttribute('aria-checked', prefs.sound !== false); openDlg($('dSet')); renderAll(); };
+$('tSound').onclick = () => { prefs.sound = prefs.sound === false; persist(); $('tSound').setAttribute('aria-checked', prefs.sound !== false); if (prefs.sound !== false) FX.sfx.right(); };
+document.querySelectorAll('.how i').forEach(el => { const m = el.textContent.match(/^__(\w+)__$/); if (m) el.innerHTML = ico(m[1]); });
+$('tExpert').onclick = () => { prefs.expert = !prefs.expert; persist(); $('tExpert').setAttribute('aria-checked', prefs.expert); render(false); toast(prefs.expert ? 'Expert mode on' : 'Expert mode off'); };
+$('bClearBook').onclick = e => { const b = e.currentTarget; if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Tap again to reset everything'; return; } P.games = {}; P.book = {}; P.fz = {earned: {}, used: {}}; delete P.prefs.sent; delete P.prefs.boarded; persist(); location.reload(); };
+
+render(false);
+Account.init();
+if (!PROTO && 'serviceWorker' in navigator && location.protocol === 'https:' && window.top === window) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
+const started = S.levels.some(l => l.done || (l.tries || []).length || l.pin);
+if (checkInvite()) {}
+else if (!started && P.prefs.boarded !== S.day) setTimeout(showBoarding, 250);
+else if (allDone()) setTimeout(showResults, 400);
+window.__proto = {capMatch, pinFactor, pinScale, BIGGER_PAY, P, rankOf, xpTotal, streak, S: () => S, render, pinAt: (lon, lat) => Pin.placeLL(lon, lat), book};
+})();
+</script>
+</body>
+</html>
