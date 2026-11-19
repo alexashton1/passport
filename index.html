@@ -21,7 +21,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Passport">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Passport","description":"Free daily geography game: five challenges a day, collect all 195 countries.","genre":["Puzzle","Educational"],"gamePlatform":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="common.css">
 <style>
 [hidden]{display:none!important}
@@ -314,18 +314,6 @@ dialog:not(.boarddlg){overflow:hidden;overscroll-behavior:contain}.res .page{ove
 @media (prefers-color-scheme:dark){:root{--fill:rgba(120,120,128,.24);--fill2:rgba(120,120,128,.32);--sep:rgba(84,84,88,.6)}}
 html{font-synthesis:none}
 body{letter-spacing:-.005em}
-/* the serif is a single weight: let it be big and quiet */
-.brand .word,.top .day,.prompt .q,.pane .q,.sheet h2,.total .big,.tot b,.cd b,.bookhead .n,.pass-row b,.pass-foot b,.ink b,.rk-top b,.sc-head,.lcard header b,.lb .pts,.pass-stamp b,.floatpts,.pun,.total .verdict{font-weight:400!important}
-.brand .word{font-size:26px;letter-spacing:-.01em}
-.top .day{font-size:21px}
-.pane .q{font-size:29px;line-height:1.1;letter-spacing:-.005em}
-.sheet h2{font-size:31px;letter-spacing:-.01em}
-.tot b{font-size:76px;letter-spacing:-.02em}
-.pun,.total .verdict{font-size:22px;font-weight:400}
-.sc-head{font-size:24px}
-.lcard header b,.rk-top b{font-size:22px}
-.pass-row b{font-size:21px}
-.floatpts{font-size:46px}
 
 .btn,.btn.ghost,.btn.accent,.btn.big{--b-bg:var(--accent);background:var(--b-bg);color:#fff;box-shadow:none;border:0;filter:none;
   height:50px;padding:0 20px;border-radius:14px;font:600 17px/1 var(--sans);letter-spacing:-.01em;gap:8px;
@@ -918,7 +906,7 @@ const Pin = (() => {
       ctx.restore(); }
     // verdict label over the destination
     if (fx.label && now < fx.label.until) { const p = Math.min(1, (now - fx.label.t0) / 260), out = Math.min(1, (fx.label.until - now) / 350), anchor = L.at && L.km > 0 ? L.at : L.pin;
-      if (anchor && vis(anchor)) { const [x, y] = proj(anchor); ctx.globalAlpha = Math.min(p, out); ctx.font = '400 ' + (20 + 4 * (1 - p)) + 'px ' + colors.serif; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      if (anchor && vis(anchor)) { const [x, y] = proj(anchor); ctx.globalAlpha = Math.min(p, out); ctx.font = '700 ' + (16 + 4 * (1 - p)) + 'px ' + colors.serif; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
         ctx.lineWidth = 4; ctx.strokeStyle = colors.bg; const oy = anchor === L.pin ? 56 : 30; ctx.strokeText(fx.label.text, x, y - oy - 8 * p); ctx.fillStyle = fx.label.c; ctx.fillText(fx.label.text, x, y - oy - 8 * p); ctx.globalAlpha = 1; } }
   }
   // effects run on their own loop, so spinning the globe never cuts them short
