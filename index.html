@@ -143,6 +143,7 @@
 .tot small{font-size:22px;color:var(--muted);margin-left:4px}
 .pun{text-wrap:balance;text-align:center;font-family:var(--serif);font-style:italic;font-weight:600;font-size:20px;color:var(--accent);line-height:1.3;margin:8px auto 0;max-width:330px;transition:opacity .5s,transform .5s}
 .pun.hide{opacity:0;transform:translateY(8px)}
+.pun .cabin{display:table;margin:0 auto 8px;padding:5px 12px;border-radius:99px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font:600 12px/1 var(--sans);font-style:normal;letter-spacing:.08em;text-transform:uppercase}
 .rank{margin-top:18px;background:var(--bg);border-radius:16px;padding:12px 14px;transition:box-shadow .4s}
 .rank.up{box-shadow:0 0 0 2px var(--accent)}
 .rk-top{display:flex;align-items:center;gap:10px}
@@ -435,7 +436,7 @@ body{letter-spacing:-.005em}
   <div class="how">
     <div><i>__explorer__</i><span><b>Climb the ranks.</b> Every point is XP. Start as a Tourist, finish as a Legend.</span></div>
     <div><i>__outline__</i><span><b>Eight kinds of challenge.</b> Outlines, flags, capitals, borders, odd one out, bigger or smaller, and dropping a pin on the globe.</span></div>
-    <div><i>__check__</i><span><b>How scoring works.</b> Full points first time, 40% on a second try. Pins pay more the closer you land, and small countries are judged more strictly.</span></div>
+    <div><i>__check__</i><span><b>How scoring works.</b> Full points first time. Second tries and wrong guesses still earn something if you were close. Every day ends with a pin worth 300: the closer you land, the more you score.</span></div>
     <div><i>__hint__</i><span><b>Stuck?</b> A hint costs a quarter of that challenge’s points.</span></div>
     <div><i>__book__</i><span><b>Fill your passport.</b> Every country you get right is stamped in for good. Can you collect all 195?</span></div>
     <div><i>__expert__</i><span><b>Too easy?</b> Expert mode in Settings makes you type the answers.</span></div>
@@ -754,6 +755,8 @@ const PUNS = [
   [100, ['Missed the connecting flight.', 'Passport control has a few questions.']],
   [0, ['Didn’t make it past check-in. Tomorrow’s another flight.', 'Grounded today. Clear skies tomorrow.']],
 ];
+const CABINS = [[1000, 'Captain'], [900, 'First class'], [800, 'Business class'], [650, 'Premium economy'], [500, 'Economy'], [350, 'Delayed'], [200, 'Lost luggage'], [0, 'Grounded']];
+const cabin = t => CABINS.find(([m]) => t >= m)[1];
 const pun = (t, day) => { const l = PUNS.find(([m]) => t >= m)[1]; return l[day % l.length]; };
 
 /* ---------- today's itinerary: five of eight games, each harder than the last ---------- */
@@ -761,15 +764,30 @@ const T1 = tier(1), T2 = tier(2), T3 = tier(3), isT1 = new Set(T1.map(c => c.c))
 const FAME = [T1, [...T1, ...T2.filter(c => c.rank <= 60)], T2, UN.filter(c => !isT1.has(c.c) && c.rank > 40), UN.filter(c => !isT1.has(c.c) && c.rank > 90)];
 const OUTLINE_POOL = [T1, T1, T2, T2, T3];
 const nOpts = lv => lv < 3 ? 4 : 6;
-function build() {
-  const r = dailyRng(GAME), used = new Set();
-  const take = (pool, ok = () => true) => { const c = shuffle(r, pool).find(x => !used.has(x.c) && ok(x)) || shuffle(r, UN).find(x => !used.has(x.c) && ok(x)); used.add(c.c); return c; };
+// No repeats: from day 3 each question picks a country not used for NOREP_WIN days, or failing that the one used longest ago.
+// Every player works out the same chain from day 1, so the puzzle stays identical for everyone.
+const NOREP_FROM = 3, NOREP_WIN = 30, NEWRULES_FROM = 3;
+const levelCodes = lv => lv.flatMap(L => L.kind === 'bigger' ? [] : L.kind === 'odd' ? [L.code, L.subject] : [L.code]);
+function build(day = dayNum()) {
+  const seen = new Map(); let lv;
+  for (let k = 1; k <= day; k++) { lv = buildDay(k, k >= NOREP_FROM ? seen : null); if (k < day) levelCodes(lv).forEach(c => seen.set(c, k)); }
+  return lv;
+}
+function buildDay(day, seen) {
+  const r = GK.rng(GK.hash(GAME + ':' + day)), used = new Set();
+  const age = x => seen && seen.has(x.c) ? day - seen.get(x.c) : 1e9, fresh = x => age(x) > NOREP_WIN;
+  const take = (pool, ok = () => true) => {
+    if (!seen) { const c = shuffle(r, pool).find(x => !used.has(x.c) && ok(x)) || shuffle(r, UN).find(x => !used.has(x.c) && ok(x)); used.add(c.c); return c; }
+    let cand = shuffle(r, pool).filter(x => !used.has(x.c) && ok(x)); if (!cand.length) cand = shuffle(r, UN).filter(x => !used.has(x.c) && ok(x));
+    const c = cand.find(fresh) || cand.reduce((a, b) => age(b) > age(a) ? b : a); used.add(c.c); return c;
+  };
   const distract = (ans, n, ok = () => true) => {
     const cand = UN.filter(c => c.c !== ans.c && ok(c));
     const near = shuffle(r, cand.filter(c => c.sr === ans.sr)), reg = shuffle(r, cand.filter(c => c.r === ans.r && c.sr !== ans.sr)), any = shuffle(r, cand);
     return [...new Set([...near, ...reg, ...any])].slice(0, n);
   };
-  const kinds = shuffle(r, Object.keys(GAMES)).slice(0, 5);
+  // From day 3 the pin is always the 300-point finale; the other four stamps rotate through the remaining seven games
+  const kinds = day >= NEWRULES_FROM ? [...shuffle(r, Object.keys(GAMES).filter(k => k !== 'pin')).slice(0, 4), 'pin'] : shuffle(r, Object.keys(GAMES)).slice(0, 5);
   return kinds.map((kind, lv) => {
     const L = {kind, lv, max: LMAX[lv], done: false, pts: 0, tries: [], hint: false};
     const n = nOpts(lv);
@@ -780,19 +798,22 @@ function build() {
     if (kind === 'borders') { const a = take(FAME[lv], c => c.b.filter(b => byCode.has(b)).length >= 3); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, 999).filter(c => !a.b.includes(c.c)).slice(0, n - 1)]).map(c => c.c); }
     if (kind === 'odd') {
       const s = take(FAME[lv], c => c.b.filter(b => byCode.has(b)).length >= n - 1); const nb = shuffle(r, s.b.filter(b => byCode.has(b))).slice(0, n - 1);
-      const odd = UN.filter(c => c.c !== s.c && !s.b.includes(c.c) && !used.has(c.c)).map(c => [c, distKm(c.ll, s.ll)]).sort((a, b) => a[1] - b[1]).slice(0, 6);
+      const near = UN.filter(c => c.c !== s.c && !s.b.includes(c.c) && !used.has(c.c)).map(c => [c, distKm(c.ll, s.ll)]).sort((a, b) => a[1] - b[1]);
+      let odd = near.slice(0, 6);
+      if (seen) { const ten = near.slice(0, 10), top = Math.max(...ten.map(([c]) => Math.min(age(c), NOREP_WIN + 1))); odd = ten.filter(([c]) => Math.min(age(c), NOREP_WIN + 1) === top).slice(0, 6); }
       const o = pick(r, odd)[0]; used.add(o.c);
       L.subject = s.c; L.code = o.c; L.options = shuffle(r, [o.c, ...nb]);
     }
     if (kind === 'bigger') {
       const band = [[2, 5], [1.6, 2.5], [1.35, 1.8], [1.18, 1.45], [1.05, 1.25]][lv], pool = UN.filter(c => c.rank && c.rank <= 175);
       L.duels = []; L.cur = 0; let guard = 0;
-      while (L.duels.length < 5 && guard++ < 5000) { const a = pick(r, pool), b = pick(r, pool); if (a.c === b.c || used.has(a.c) || used.has(b.c)) continue; const q = Math.max(a.ar, b.ar) / Math.min(a.ar, b.ar); if (q < band[0] || q > band[1]) continue; used.add(a.c); used.add(b.c); L.duels.push([a.c, b.c]); }
+      while (L.duels.length < 5 && guard++ < 5000) { const a = pick(r, pool), b = pick(r, pool); if (a.c === b.c || used.has(a.c) || used.has(b.c)) continue; if (seen && guard < 4000 && (age(a) <= 21 || age(b) <= 21)) continue; const q = Math.max(a.ar, b.ar) / Math.min(a.ar, b.ar); if (q < band[0] || q > band[1]) continue; used.add(a.c); used.add(b.c); L.duels.push([a.c, b.c]); }
     }
     if (kind === 'pin') {
       const ranked = UN.filter(c => c.rank);
       const bands = [ranked.filter(c => c.rank <= 35), ranked.filter(c => c.rank > 35 && c.rank <= 85), ranked.filter(c => c.rank > 85 && c.rank <= 135), ranked.filter(c => c.rank > 135 && c.rank <= 172), ranked.filter(c => c.ar < 5000 && !['VAT', 'MCO', 'NRU'].includes(c.c))];
-      L.code = take(bands[lv]).c; L.pin = null; L.km = null;
+      const finale = day >= NEWRULES_FROM ? [...bands[3], ...bands[4]] : bands[lv];
+      L.code = take(finale).c; L.pin = null; L.km = null;
     }
     return L;
   });
@@ -1030,9 +1051,10 @@ function doneTitle(L) {
 // one line on how it went, picked so it doesn't repeat every day
 const pickLine = (L, list) => list[(S.day * 7 + L.lv * 3) % list.length];
 function verdictLine(L) {
-  const right = L.pts > 0, first = L.tries.length <= 1, clean = !L.hint;
+  const right = L.pts > 0 && (L.kind !== 'outline' || L.tries.includes(L.code)), first = L.tries.length <= 1, clean = !L.hint;
   if (L.kind === 'pin') return L.km === 0 ? 'Bullseye. Right inside the border.' : fmtKm(L.km) + ' off. ' + (L.km <= 100 ? 'Close enough to wave.' : L.km <= 400 ? 'Same neighbourhood.' : L.km <= 1500 ? 'Wrong turn somewhere.' : 'A long way from home.');
   if (L.kind === 'bigger') { const n = L.tries.filter(Boolean).length; return n === 5 ? 'A perfect five. Sharp eye.' : n === 4 ? 'Four out of five. Nearly flawless.' : n === 3 ? 'Three out of five. Maps lie, don’t they?' : 'Maps are tricky. Tomorrow’s another day.'; }
+  if (!right && L.pts > 0) return 'Not quite, but close enough for ' + L.pts + ' points.';
   if (!right) return pickLine(L, ['Not this time. Now you know.', 'That one got away.', 'One for next time.']);
   if (L.kind === 'outline') return L.tries.length === 1 ? (clean ? pickLine(L, ['First guess. Spot on.', 'Nailed it first time.', 'Straight in.']) : 'Got it, with a little help.') : 'Found it on guess ' + L.tries.length + '.';
   if (!first) return pickLine(L, ['Got there on the second go.', 'Second time lucky.', 'Saved it on the second try.']);
@@ -1133,13 +1155,20 @@ function choices(L, label, isCap, withFlag) {
 function answer(L, guess) {
   L.tries.push(guess);
   const right = guess === L.code || (L.kind === 'capital' && typeof guess === 'string' && capMatch(guess, L.code));
-  if (right) return finish(L, L.tries.length === 1 ? 1 : .4, L.code);
+  if (right) return finish(L, L.tries.length === 1 ? 1 : secondTry(L), L.code);
   if (L.tries.length >= 2) return finish(L, 0, null);
   save(); render(false); nudgeWrong(); const m = $('msg'); m.textContent = pickLine(L, ['Not quite. One more go.', 'Close, but no. Try again.', 'Nope. You’ve got one more shot.']); m.classList.remove('pop'); void m.offsetWidth; m.classList.add('pop');
 }
 /* ---- scoring rules ---- */
 // Bigger: 5 coin-flip duels. Linear pay gave guessers 50% on average and a stamp half the time; this curve pays for knowledge.
 const BIGGER_PAY = [0, 0, .15, .4, .7, 1];
+// Near misses (from day 3): a wrong guess right next to the answer is worth more than one on the wrong continent.
+const near = (guess, code) => { try { const km = GK.gapKm(guess, code); return km <= 0 ? 1 : Math.exp(-km / 1200); } catch (e) { return 0; } };
+const newRules = () => S.day >= NEWRULES_FROM;
+// second try on a pick-one question: 30% to 50% depending on how close the first pick was (Odd one out keeps a flat 40%)
+const secondTry = L => !newRules() || L.kind === 'odd' || typeof L.tries[0] !== 'string' || !byCode.has(L.tries[0]) ? .4 : .3 + .2 * near(L.tries[0], L.code);
+// Outline: 2nd guess 40% to 70%, 3rd 20% to 40%, and up to 15% for three near misses
+const outlinePay = L => Math.max(0, ...L.tries.filter(t => t !== L.code && byCode.has(t)).map(t => near(t, L.code)));
 // Pin: distance decay scaled to the country, so 150 km off Belgium costs more than 150 km off Brazil.
 const pinScale = code => Math.min(900, Math.max(250, Math.sqrt(byCode.get(code).ar || 0) * 1.5));
 const pinFactor = (km, code) => km <= 25 ? 1 : Math.exp(-km / pinScale(code));
@@ -1158,8 +1187,9 @@ autocomplete({input: $('inp'), list: $('list'), form: $('form'), msg: $('msg'), 
   const L = lvl(); if (L.done) return;
   if (L.kind === 'outline') {
     L.tries.push(code);
-    if (code === L.code) return finish(L, [1, .6, .3][L.tries.length - 1], L.code);
-    if (L.tries.length >= 3) return finish(L, 0, null);
+    const c = newRules() ? outlinePay(L) : 0, n = L.tries.length;
+    if (code === L.code) return finish(L, !newRules() ? [1, .6, .3][n - 1] : n === 1 ? 1 : n === 2 ? .4 + .3 * c : .2 + .2 * c, L.code);
+    if (n >= 3) return finish(L, newRules() ? .15 * c : 0, null);
     save(); render(true); FX.sfx.wrong();
   } else answer(L, code);
 }});
@@ -1353,7 +1383,7 @@ function showBoarding() {
 
 /* ================= results: stamp the page, count it up, level up ================= */
 const QUAL = {hit: 'Perfect', near: 'Nice', mid: 'Close', far: 'Missed'};
-const qualFor = l => !l.pts ? 'Missed' : l.pts === l.max ? 'Perfect' : (['flag', 'capital', 'whose', 'borders', 'odd'].includes(l.kind) && l.tries.length === 2) ? '2nd try' : l.kind === 'outline' && l.tries.length > 1 ? 'Guess ' + l.tries.length : QUAL[clsFor(l.pts, l.max)];
+const qualFor = l => !l.pts ? 'Missed' : l.kind === 'outline' && !l.tries.includes(l.code) ? 'Near miss' : l.pts === l.max ? 'Perfect' : (['flag', 'capital', 'whose', 'borders', 'odd'].includes(l.kind) && l.tries.length === 2) ? '2nd try' : l.kind === 'outline' && l.tries.length > 1 ? 'Guess ' + l.tries.length : QUAL[clsFor(l.pts, l.max)];
 // phones get the native share sheet (WhatsApp, Messages...); computers copy
 const canShare = () => !!navigator.share && matchMedia('(pointer: coarse)').matches;
 // the bare address reads cleanly in chats, and WhatsApp/iMessage still turn it into a link
@@ -1362,18 +1392,16 @@ function selectShareBox() { const el = document.querySelector('#dRes .sharebox')
 async function showResults() {
   const t = total(), stamps = S.levels.filter(stamped).length, verdict = pun(t, S.day), st = streak(), n = Object.keys(P.book).length;
   const xpAfter = xpTotal(), xpBefore = xpAfter - t, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
-  // what gets copied: four short lines, spoiler-free
-  // MapTap-style: each stamp out of 100 with an emoji for how it went, then the total
-  const tierEmo = pc => pc >= 100 ? '🎯' : pc >= 85 ? '🏆' : pc >= 70 ? '🌟' : pc >= 60 ? '✅' : pc >= 40 ? '🧭' : pc >= 20 ? '🤔' : pc > 0 ? '😬' : '💀';
-  const shortDate = GK.dayDate(S.day).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', timeZone: 'UTC'});
-  const shareLines = ['Passport No. ' + S.day + ' · ' + shortDate, S.levels.map(l => { const pc = Math.round(l.pts / l.max * 100); return pc + tierEmo(pc); }).join(' '), 'Final score: ' + t + (S.levels.some(expertFor) ? ' · Expert' : '')].concat(st > 1 ? ['🔥 ' + st + '-day streak'] : []);
+  // what gets copied: cabin label, points per game, total
+  const EMO_G = {outline: '🌍', flag: '🏳️', capital: '🏛️', whose: '🏙️', borders: '🗺️', odd: '🧩', bigger: '⚖️', pin: '📍'};
+  const shareLines = ['Passport No. ' + S.day + ' · ' + cabin(t) + ' ✈️', S.levels.map(l => EMO_G[l.kind] + l.pts).join(' · '), 'Final Score: *' + t.toLocaleString('en-GB') + '*/ 1,000'];
   const subj = l => l.kind === 'bigger' ? 'Five head-to-heads' : l.kind === 'odd' ? byCode.get(l.subject).n : byCode.get(l.code).n;
   $('dRes').innerHTML = '<div class="sheet res" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
     '<div class="res-kicker">Passport No. ' + S.day + ' · ' + esc(fmtDate()) + '</div>' +
     '<div class="page">' + S.levels.map((l, i) => { const q = clsFor(l.pts, l.max); return '<div class="ink q-' + q + (animate ? '' : ' in') + '" style="--r:' + [-8, 6, -4, 9, -6][i] + 'deg"><span class="ik">' + ICON[l.kind] + '</span><span class="iname">' + esc(GAMES[l.kind].short) + '</span><b>' + l.pts + '</b><span class="iq">' + qualFor(l) + '</span></div>'; }).join('') + '</div>' +
     '<ul class="res-lines">' + S.levels.map(l => '<li><span>' + ICON[l.kind] + ' ' + esc(GAMES[l.kind].name) + ' <small>· ' + esc(subj(l)) + (l.hint ? ' · hint' : '') + '</small></span><b>' + l.pts + '<small>/' + l.max + '</small></b></li>').join('') + '</ul>' +
     '<div class="tot"><b id="resTotal">' + (animate ? 0 : t) + '</b><small>/ 1,000</small></div>' +
-    '<div class="pun' + (animate ? ' hide' : '') + '" id="resPun">' + esc(verdict) + '</div>' +
+    '<div class="pun' + (animate ? ' hide' : '') + '" id="resPun"><span class="cabin">' + (t >= 1000 ? '✈︎ ' : '') + esc(cabin(t)) + '</span>' + esc(verdict) + '</div>' +
     '<div class="share-wrap' + (animate ? ' hide' : '') + '" id="resShare"><div class="row share-row">' + (canShare()
       ? '<button class="btn accent share-main" id="rsShare">' + ico('share') + '<span>Share your score</span></button><button class="btn ghost share-copy" id="rsCopy" aria-label="Copy your score">' + ico('copy') + '<span>Copy</span></button>'
       : '<button class="btn accent share-main" id="rsCopy">' + ico('share') + '<span>Share your score</span></button>') +
