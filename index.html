@@ -219,6 +219,9 @@ dialog:not(.boarddlg){overflow:hidden;overscroll-behavior:contain}.res .page{ove
 .fs .fsn{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:1.5px dashed var(--line);color:var(--muted);font:800 11px var(--sans);font-variant-numeric:tabular-nums;transition:background .3s,border-color .3s,transform .3s}
 .fs .fsn .ico{width:16px;height:16px}
 .fs .fsl{width:100%;white-space:nowrap;font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);line-height:1.1;text-align:center}
+.flight .jet,.flight .trail{pointer-events:none}.fs[data-rv]{cursor:pointer;-webkit-tap-highlight-color:transparent}.fs[data-rv]:active .fsn{transform:scale(.92)}
+.fs.viewing .fsn{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--c)}.fs .fsl{transition:transform .25s ease}.fs.viewing .fsl{color:var(--ink);transform:translateY(6px)}
+.res-lines li[data-rv]{cursor:pointer}@media (hover:hover){.res-lines li[data-rv]:hover{background:var(--fill)}}
 .fs .fsl small{display:block;font-weight:600;letter-spacing:0;opacity:.85;font-variant-numeric:tabular-nums}
 .fs.now .fsn{border:2px solid var(--accent);color:var(--accent);background:var(--surface);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
 .fs.now .fsl{color:var(--ink)}
@@ -822,6 +825,7 @@ let S = P.games[dayNum()];
 function fresh() { S = {day: dayNum(), idx: 0, levels: build()}; P.games[S.day] = S; persist(); }
 if (!S) fresh();
 function reloadToday() { S = P.games[dayNum()]; if (!S) { S = {day: dayNum(), idx: 0, levels: build()}; P.games[S.day] = S; } lastIdx = -1; render(false); }
+const frontier = () => { const i = S.levels.findIndex(l => !l.done); return i < 0 ? 4 : i; };
 const lvl = () => S.levels[S.idx], total = () => S.levels.reduce((a, l) => a + l.pts, 0), allDone = () => S.levels.every(l => l.done);
 const save = () => persist();
 const expertFor = L => !!prefs.expert && ['flag', 'capital', 'whose', 'borders'].includes(L.kind);
@@ -1015,9 +1019,9 @@ const Pin = (() => {
 let lastIdx = -1;
 function render(animate) {
   $('no').textContent = S.day; $('date').textContent = fmtDate(); if (!$('total').dataset.anim) $('total').textContent = total();
-  { const parked = allDone(), prog = parked ? 1 : (S.idx + (S.levels[S.idx].done ? .5 : -.5)) / 4;
+  { const parked = allDone(), fr = frontier(), prog = parked ? 1 : (fr + (S.levels[fr].done ? .5 : -.5)) / 4;
     $('steps').innerHTML = '<span class="trail" aria-hidden="true"></span><span class="jet' + (parked ? ' parked' : '') + '" aria-hidden="true">' + ico('plane') + '</span>' + S.levels.map((l, i) => { const now = !l.done && i === S.idx;
-      return '<li class="fs' + (l.done ? ' done s-' + clsFor(l.pts, l.max) : now ? ' now' : '') + '" aria-label="' + GAMES[l.kind].name + ', ' + (l.done ? l.pts + ' of ' + l.max : l.max + ' points') + '"><span class="fsn">' + (l.done ? l.pts : ico(l.kind)) + '</span><span class="fsl">' + GAMES[l.kind].short + '<small>' + (l.done ? '/' + l.max : l.max) + '</small></span></li>'; }).join('');
+      return '<li class="fs' + (l.done ? ' done s-' + clsFor(l.pts, l.max) + (i === S.idx ? ' viewing' : '') : now ? ' now' : '') + '"' + (l.done ? ' data-rv="' + i + '" role="button" tabindex="0"' : '') + ' aria-label="' + GAMES[l.kind].name + ', ' + (l.done ? l.pts + ' of ' + l.max + '. Review this stamp' : l.max + ' points') + '"><span class="fsn">' + (l.done ? l.pts : ico(l.kind)) + '</span><span class="fsl">' + GAMES[l.kind].short + '<small>' + (l.done ? '/' + l.max : l.max) + '</small></span></li>'; }).join('');
     const el = $('steps'), prev = el._prog; el.style.setProperty('--prog', prev == null ? prog : prev); if (prev !== prog) requestAnimationFrame(() => requestAnimationFrame(() => el.style.setProperty('--prog', prog))); el._prog = prog; }
   const L = lvl(), ex = expertFor(L), isNew = lastIdx !== S.idx; lastIdx = S.idx;
   $('lvtag').innerHTML = 'Stamp <b>' + (S.idx + 1) + '</b> of 5 · ' + L.max + ' points' + (ex ? ' <span class="badge">' + ico('expert') + ' Expert</span>' : '');
@@ -1038,11 +1042,15 @@ function render(animate) {
   // hint chip (shared)
   if (L.hint && HINT_TEXT[L.kind]) $('chips').insertAdjacentHTML('beforeend', '<span class="chip">' + ico('hint') + ' ' + (L.hintNote || HINT_TEXT[L.kind](L, ex)) + '</span>');
   $('stampBox').innerHTML = L.done && L.booked ? '<div class="stamp">Stamped</div>' : '';   // the stamp means the country went into your passport
-  $('nextBox').innerHTML = L.done ? '<div class="next"><div class="t"><b>' + doneTitle(L) + '</b>' + doneLine(L) + '</div>' + (S.idx < 4 ? '<button class="btn accent" id="bNext">Next' + ico('arrow') + '</button>' : '') + '</div>' : '';
-  if ($('bNext')) $('bNext').onclick = () => { S.idx++; save(); render(true); };
+  $('nextBox').innerHTML = L.done ? '<div class="next"><div class="t"><b>' + doneTitle(L) + '</b>' + doneLine(L) + '</div>' + (allDone() ? '' : S.idx < frontier() - 1 ? '<button class="btn accent" id="bNext">Back to stamp ' + (frontier() + 1) + ico('arrow') + '</button>' : S.idx < 4 ? '<button class="btn accent" id="bNext">Next' + ico('arrow') + '</button>' : '') + '</div>' : '';
+  if ($('bNext')) $('bNext').onclick = () => { S.idx = S.idx < frontier() - 1 ? frontier() : S.idx + 1; save(); render(true); };
   if ($('bEnd')) $('bEnd').onclick = showResults;
-  $('bResults').hidden = !(allDone() && S.idx === 4); if (!$('bResults').hidden && !$('bResults').querySelector('.ico')) $('bResults').insertAdjacentHTML('beforeend', ico('arrow'));
+  $('bResults').hidden = !allDone(); if (!$('bResults').hidden && !$('bResults').querySelector('.ico')) $('bResults').insertAdjacentHTML('beforeend', ico('arrow'));
 }
+// tap a finished stamp on the flight path (or a line on the results card) to look back at it
+function review(i) { if (typeof Pin !== 'undefined' && Pin.flying && Pin.flying()) return; const l = S.levels[i]; if (!l || !l.done || i === S.idx) return; S.idx = i; save(); render(true); window.scrollTo({top: 0, behavior: 'smooth'}); }
+$('steps').addEventListener('click', e => { const li = e.target.closest('[data-rv]'); if (li) review(+li.dataset.rv); });
+$('steps').addEventListener('keydown', e => { const li = e.target.closest('[data-rv]'); if (li && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); review(+li.dataset.rv); } });
 function doneTitle(L) {
   if (L.kind === 'bigger') return L.tries.filter(Boolean).length + ' of 5 right · +' + L.pts;
   const c = byCode.get(L.code), head = L.kind === 'capital' ? esc(c.cap) + ', ' + esc(c.n) : L.kind === 'whose' ? esc(c.cap) + ' → ' + esc(c.n) : L.kind === 'odd' ? esc(c.n) + ' doesn’t border ' + esc(byCode.get(L.subject).n) : esc(c.n);
@@ -1403,7 +1411,7 @@ async function showResults() {
   $('dRes').innerHTML = '<div class="sheet res" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
     '<div class="res-kicker">Passport No. ' + S.day + ' · ' + esc(fmtDate()) + '</div>' +
     '<div class="page">' + S.levels.map((l, i) => { const q = clsFor(l.pts, l.max); return '<div class="ink q-' + q + (animate ? '' : ' in') + '" style="--r:' + [-8, 6, -4, 9, -6][i] + 'deg"><span class="ik">' + ICON[l.kind] + '</span><span class="iname">' + esc(GAMES[l.kind].short) + '</span><b>' + l.pts + '</b><span class="iq">' + qualFor(l) + '</span></div>'; }).join('') + '</div>' +
-    '<ul class="res-lines">' + S.levels.map(l => '<li><span>' + ICON[l.kind] + ' ' + esc(GAMES[l.kind].name) + ' <small>· ' + esc(subj(l)) + (l.hint ? ' · hint' : '') + '</small></span><b>' + l.pts + '<small>/' + l.max + '</small></b></li>').join('') + '</ul>' +
+    '<ul class="res-lines">' + S.levels.map((l, i) => '<li data-rv="' + i + '" role="button" tabindex="0" title="Review this stamp"><span>' + ICON[l.kind] + ' ' + esc(GAMES[l.kind].name) + ' <small>· ' + esc(subj(l)) + (l.hint ? ' · hint' : '') + '</small></span><b>' + l.pts + '<small>/' + l.max + '</small></b></li>').join('') + '</ul>' +
     '<div class="tot"><b id="resTotal">' + (animate ? 0 : t) + '</b><small>/ 1,000</small></div>' +
     '<div class="pun' + (animate ? ' hide' : '') + '" id="resPun"><span class="cabin">' + (t >= 1000 ? '✈︎ ' : '') + esc(cabin(t)) + '</span>' + esc(verdict) + '</div>' +
     '<div class="share-wrap' + (animate ? ' hide' : '') + '" id="resShare"><div class="row share-row">' + (canShare()
@@ -1424,6 +1432,7 @@ async function showResults() {
     setTimeout(() => { if (!b.isConnected) return; span.textContent = old; b.querySelector('.ico').outerHTML = oldIco; b.classList.remove('done'); $('shareNote').textContent = 'Your score and stamps, no spoilers'; }, 2600); };
   $('rsCopy').onclick = async e => { const b = e.currentTarget, ok = await GK.copy(shareText(), true); if (ok) { shareDone(b, b.classList.contains('share-main') ? 'Score copied' : 'Copied', 'Paste it in your group chat'); FX.sfx.right(); } else { $('shareNote').textContent = 'Press and hold the text below to copy it'; selectShareBox(); } };
   if ($('rsShare')) $('rsShare').onclick = async () => { try { await navigator.share({text: shareText()}); } catch (err) { if (err && err.name !== 'AbortError') { const ok = await GK.copy(shareText()); if (!ok) selectShareBox(); } } };
+  $('dRes').querySelectorAll('.res-lines [data-rv]').forEach(li => { const go = () => { $('dRes').close(); review(+li.dataset.rv); }; li.onclick = go; li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
   if ($('rsReplay')) $('rsReplay').onclick = () => { $('dRes').close(); delete P.games[S.day]; fresh(); lastIdx = -1; render(false); };
   // global rank (if a scoreboard is connected)
   (async () => { await submitScore(S.day, t); leagueSummary(); let r = null, r2 = null; try { [r, r2] = await Promise.all([fetchRank(S.day, t), fetchRank(S.day, t + 1)]); } catch (e) {} if (!r || !$('resGlobal')) return;
