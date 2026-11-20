@@ -1036,7 +1036,7 @@ function render(animate) {
   $('msg').textContent = '';
   VIEWS[L.kind](L, animate, isNew);
   // hint chip (shared)
-  if (L.hint && HINT_TEXT[L.kind]) $('chips').insertAdjacentHTML('beforeend', '<span class="chip">' + ico('hint') + ' ' + HINT_TEXT[L.kind](L, ex) + '</span>');
+  if (L.hint && HINT_TEXT[L.kind]) $('chips').insertAdjacentHTML('beforeend', '<span class="chip">' + ico('hint') + ' ' + (L.hintNote || HINT_TEXT[L.kind](L, ex)) + '</span>');
   $('stampBox').innerHTML = L.done && L.booked ? '<div class="stamp">Stamped</div>' : '';   // the stamp means the country went into your passport
   $('nextBox').innerHTML = L.done ? '<div class="next"><div class="t"><b>' + doneTitle(L) + '</b>' + doneLine(L) + '</div>' + (S.idx < 4 ? '<button class="btn accent" id="bNext">Next' + ico('arrow') + '</button>' : '') + '</div>' : '';
   if ($('bNext')) $('bNext').onclick = () => { S.idx++; save(); render(true); };
@@ -1068,15 +1068,19 @@ function doneLine(L) {
 /* hints: one per stamp, costs 25% of its value */
 const halfOut = L => { const wrong = L.options.filter(o => o !== L.code); return new Set(wrong.slice(0, Math.floor(wrong.length / 2))); };   // stable: same options removed every render
 const HINT_TEXT = {
-  outline: L => 'Somewhere in ' + esc(byCode.get(L.code).sr),
+  // Outline: name the region, unless your guesses on the map have already shown it. Then give the first letter instead
+  outline: L => { const A = byCode.get(L.code), w = A.n.split(/\s+/).length;
+    const shown = L.tries.some(t => t !== L.code && byCode.has(t) && (byCode.get(t).sr === A.sr || GK.gapKm(t, L.code) < 1500));
+    return shown ? 'Starts with “' + esc(A.n[0]) + '”' + (w > 1 ? ' · ' + w + ' words' : '') : 'Somewhere in ' + esc(A.sr); },
   flag: L => 'Somewhere in ' + esc(byCode.get(L.code).sr),
   capital: (L, ex) => ex ? 'Starts with “' + esc(byCode.get(L.code).cap[0]) + '”' : 'Half the wrong answers removed',
   whose: (L, ex) => ex ? 'Somewhere in ' + esc(byCode.get(L.code).sr) : 'Half the wrong answers removed',
-  borders: L => 'Somewhere in ' + esc(byCode.get(L.code).sr),
+  // Borders: the neighbours already give away the region, so the hint narrows the answers instead
+  borders: (L, ex) => ex ? 'Starts with “' + esc(byCode.get(L.code).n[0]) + '”' : 'Half the wrong answers removed',
   odd: () => 'One wrong answer removed',
   pin: L => 'Look in ' + esc(byCode.get(L.code).sr),
 };
-$('bHint').onclick = () => { const L = lvl(); if (L.done || L.hint) return; L.hint = true; save(); render(false); toast('Hint used: −' + Math.round(L.max * HINT_COST) + ' points max'); };
+$('bHint').onclick = () => { const L = lvl(); if (L.done || L.hint) return; L.hint = true; if (HINT_TEXT[L.kind]) L.hintNote = HINT_TEXT[L.kind](L, expertFor(L)); save(); render(false); toast('Hint used: −' + Math.round(L.max * HINT_COST) + ' points max'); };
 
 /* finishing a stamp */
 function finish(L, factor, bookCode) {
@@ -1137,7 +1141,7 @@ const inSentence = c => (THE.has(c.c) ? 'the ' : '') + esc(c.n);
 function choices(L, label, isCap, withFlag) {
   const ex = expertFor(L);
   let removed = new Set();   // a hint removes wrong options: half of them (Capital, Whose capital?) or one (Odd one out)
-  if (L.hint && !ex && (L.kind === 'capital' || L.kind === 'whose')) removed = halfOut(L);
+  if (L.hint && !ex && (L.kind === 'capital' || L.kind === 'whose' || L.kind === 'borders')) removed = halfOut(L);
   if (L.hint && L.kind === 'odd') removed = new Set([L.options.find(o => o !== L.code)]);
   if (ex) {
     $('chips').innerHTML = L.tries.map(t => '<span class="chip c-far">✕ ' + esc(isCap ? t : byCode.get(t) ? byCode.get(t).n : t) + '</span>').join('');
@@ -1394,7 +1398,7 @@ async function showResults() {
   const xpAfter = xpTotal(), xpBefore = xpAfter - t, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
   // what gets copied: cabin label, points per game, total
   const EMO_G = {outline: '🌍', flag: '🏳️', capital: '🏛️', whose: '🏙️', borders: '🗺️', odd: '🧩', bigger: '⚖️', pin: '📍'};
-  const shareLines = ['Passport No. ' + S.day + ' · ' + cabin(t) + ' ✈️', S.levels.map(l => EMO_G[l.kind] + l.pts).join(' · '), 'Final Score: *' + t.toLocaleString('en-GB') + '*/ 1,000'];
+  const shareLines = ['Passport No. ' + S.day + ' · ' + cabin(t) + ' ✈️', S.levels.map(l => EMO_G[l.kind] + l.pts).join(' · '), 'Final Score: ' + t.toLocaleString('en-GB') + ' / 1,000'];
   const subj = l => l.kind === 'bigger' ? 'Five head-to-heads' : l.kind === 'odd' ? byCode.get(l.subject).n : byCode.get(l.code).n;
   $('dRes').innerHTML = '<div class="sheet res" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
     '<div class="res-kicker">Passport No. ' + S.day + ' · ' + esc(fmtDate()) + '</div>' +
