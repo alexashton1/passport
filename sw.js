@@ -1,6 +1,6 @@
 // Passport service worker: pages and settings are network-first (a new day or release always loads online),
 // the big static files are cache-first. Bump VERSION whenever you upload new geo.js, data.js, flags.js or common.* files.
-const VERSION = 'passport-v20';
+const VERSION = 'passport-v21';
 const ASSETS = ['./', 'index.html', 'config.js', 'common.css', 'common.js', 'geo.js', 'data.js', 'flags.js', 'favicon.svg', 'icon-192.png', 'icon-512.png', 'manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
