@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Passport: five geography stamps a day</title>
+<title>Passport: a daily geography trip in five legs</title>
 <meta name="description" content="Passport is a free daily geography game. Five quick challenges (outlines, flags, capitals, borders, maps), each harder than the last. Fill your passport with all 195 countries.">
 <meta name="theme-color" content="#7A2E3B">
-<meta property="og:title" content="Passport: five geography stamps a day">
+<meta property="og:title" content="Passport: a daily geography trip in five legs">
 <meta property="og:description" content="Five quick geography challenges a day. Score up to 1,000, collect all 195 countries, and beat your group chat.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://playpassport.club/">
@@ -403,7 +403,7 @@ body{letter-spacing:-.005em}
 
 <main>
   <div class="top"><div class="day">No. <span id="no"></span><small id="date"></small></div><div class="score" id="scorePill" aria-live="polite">Score <b id="total">0</b><span style="color:var(--muted);font-weight:600"> / 1,000</span></div></div>
-  <ol class="flight" id="steps" aria-label="Today's five stamps"></ol>
+  <ol class="flight" id="steps" aria-label="Today's five legs"></ol>
   <div class="stage card" id="stage">
     <span class="lvtag" id="lvtag"></span>
     <button class="hintbtn" id="bHint"></button>
@@ -434,14 +434,14 @@ body{letter-spacing:-.005em}
 
 <dialog id="dHelp"><div class="sheet" tabindex="-1" autofocus>
   <button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  <h2>Five stamps a day</h2>
-  <p>Five countries, five challenges, one new passport page every day. Each challenge is harder than the last and worth more: <b>100, 150, 200, 250, 300</b>. Up to <b>1,000</b> points a day.</p>
+  <h2>Five legs a day</h2>
+  <p>Every day is a trip in five legs, each a different geography challenge. Each leg is harder than the last and worth more: <b>100, 150, 200, 250, 300</b>. Up to <b>1,000</b> points a day.</p>
   <div class="how">
     <div><i>__explorer__</i><span><b>Climb the ranks.</b> Every point is XP. Start as a Tourist, finish as a Legend.</span></div>
     <div><i>__outline__</i><span><b>Eight kinds of challenge.</b> Outlines, flags, capitals, borders, odd one out, bigger or smaller, and dropping a pin on the globe.</span></div>
     <div><i>__check__</i><span><b>How scoring works.</b> Full points first time. Second tries and wrong guesses still earn something if you were close. Every day ends with a pin worth 300: the closer you land, the more you score.</span></div>
-    <div><i>__hint__</i><span><b>Stuck?</b> A hint costs a quarter of that challenge’s points.</span></div>
-    <div><i>__book__</i><span><b>Fill your passport.</b> Every country you get right is stamped in for good. Can you collect all 195?</span></div>
+    <div><i>__hint__</i><span><b>Stuck?</b> A hint costs a quarter of that leg’s points.</span></div>
+    <div><i>__book__</i><span><b>Fill your passport.</b> Get a country right and it’s stamped into your passport for good. Can you collect all 195?</span></div>
     <div><i>__expert__</i><span><b>Too easy?</b> Expert mode in Settings makes you type the answers.</span></div>
   </div>
   <button class="btn wide accent" data-close>Let’s go</button>
@@ -464,7 +464,7 @@ body{letter-spacing:-.005em}
 <dialog id="dLeague"><div class="sheet" tabindex="-1" autofocus>
   <button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <h2>Leagues</h2>
-  <p>Your group chat’s own leaderboard. Same five stamps for everyone, ranked today and all week.</p>
+  <p>Your group chat’s own leaderboard. Same five legs for everyone, ranked today and all week.</p>
   <p class="saved" id="lgOffline" hidden>Leagues need the online scoreboard, which isn’t connected on this copy of Passport.</p>
   <div id="lgForms">
     <div class="msg" id="lgMsg" role="status"></div>
@@ -789,7 +789,7 @@ function buildDay(day, seen) {
     const near = shuffle(r, cand.filter(c => c.sr === ans.sr)), reg = shuffle(r, cand.filter(c => c.r === ans.r && c.sr !== ans.sr)), any = shuffle(r, cand);
     return [...new Set([...near, ...reg, ...any])].slice(0, n);
   };
-  // From day 3 the pin is always the 300-point finale; the other four stamps rotate through the remaining seven games
+  // From day 3 the pin is always the 300-point finale; the other four legs rotate through the remaining seven games
   const kinds = day >= NEWRULES_FROM ? [...shuffle(r, Object.keys(GAMES).filter(k => k !== 'pin')).slice(0, 4), 'pin'] : shuffle(r, Object.keys(GAMES)).slice(0, 5);
   return kinds.map((kind, lv) => {
     const L = {kind, lv, max: LMAX[lv], done: false, pts: 0, tries: [], hint: false};
@@ -1021,10 +1021,10 @@ function render(animate) {
   $('no').textContent = S.day; $('date').textContent = fmtDate(); if (!$('total').dataset.anim) $('total').textContent = total();
   { const parked = allDone(), fr = frontier(), prog = parked ? 1 : (fr + (S.levels[fr].done ? .5 : -.5)) / 4;
     $('steps').innerHTML = '<span class="trail" aria-hidden="true"></span><span class="jet' + (parked ? ' parked' : '') + '" aria-hidden="true">' + ico('plane') + '</span>' + S.levels.map((l, i) => { const now = !l.done && i === S.idx;
-      return '<li class="fs' + (l.done ? ' done s-' + clsFor(l.pts, l.max) + (i === S.idx ? ' viewing' : '') : now ? ' now' : '') + '"' + (l.done ? ' data-rv="' + i + '" role="button" tabindex="0"' : '') + ' aria-label="' + GAMES[l.kind].name + ', ' + (l.done ? l.pts + ' of ' + l.max + '. Review this stamp' : l.max + ' points') + '"><span class="fsn">' + (l.done ? l.pts : ico(l.kind)) + '</span><span class="fsl">' + GAMES[l.kind].short + '<small>' + (l.done ? '/' + l.max : l.max) + '</small></span></li>'; }).join('');
+      return '<li class="fs' + (l.done ? ' done s-' + clsFor(l.pts, l.max) + (i === S.idx ? ' viewing' : '') : now ? ' now' : '') + '"' + (l.done ? ' data-rv="' + i + '" role="button" tabindex="0"' : '') + ' aria-label="' + GAMES[l.kind].name + ', ' + (l.done ? l.pts + ' of ' + l.max + '. Review this leg' : l.max + ' points') + '"><span class="fsn">' + (l.done ? l.pts : ico(l.kind)) + '</span><span class="fsl">' + GAMES[l.kind].short + '<small>' + (l.done ? '/' + l.max : l.max) + '</small></span></li>'; }).join('');
     const el = $('steps'), prev = el._prog; el.style.setProperty('--prog', prev == null ? prog : prev); if (prev !== prog) requestAnimationFrame(() => requestAnimationFrame(() => el.style.setProperty('--prog', prog))); el._prog = prog; }
   const L = lvl(), ex = expertFor(L), isNew = lastIdx !== S.idx; lastIdx = S.idx;
-  $('lvtag').innerHTML = 'Stamp <b>' + (S.idx + 1) + '</b> of 5 · ' + L.max + ' points' + (ex ? ' <span class="badge">' + ico('expert') + ' Expert</span>' : '');
+  $('lvtag').innerHTML = 'Leg <b>' + (S.idx + 1) + '</b> of 5 · ' + L.max + ' points' + (ex ? ' <span class="badge">' + ico('expert') + ' Expert</span>' : '');
   // hint button
   const hintable = L.kind !== 'bigger' && !(L.kind === 'odd' && L.options.length - L.tries.length <= 2);
   $('bHint').hidden = L.done || !hintable;
@@ -1042,7 +1042,7 @@ function render(animate) {
   // hint chip (shared)
   if (L.hint && HINT_TEXT[L.kind]) $('chips').insertAdjacentHTML('beforeend', '<span class="chip">' + ico('hint') + ' ' + (L.hintNote || HINT_TEXT[L.kind](L, ex)) + '</span>');
   $('stampBox').innerHTML = L.done && L.booked ? '<div class="stamp">Stamped</div>' : '';   // the stamp means the country went into your passport
-  $('nextBox').innerHTML = L.done ? '<div class="next"><div class="t"><b>' + doneTitle(L) + '</b>' + doneLine(L) + '</div>' + (allDone() ? '' : S.idx < frontier() - 1 ? '<button class="btn accent" id="bNext">Back to stamp ' + (frontier() + 1) + ico('arrow') + '</button>' : S.idx < 4 ? '<button class="btn accent" id="bNext">Next' + ico('arrow') + '</button>' : '') + '</div>' : '';
+  $('nextBox').innerHTML = L.done ? '<div class="next"><div class="t"><b>' + doneTitle(L) + '</b>' + doneLine(L) + '</div>' + (allDone() ? '' : S.idx < frontier() - 1 ? '<button class="btn accent" id="bNext">Back to leg ' + (frontier() + 1) + ico('arrow') + '</button>' : S.idx < 4 ? '<button class="btn accent" id="bNext">Next' + ico('arrow') + '</button>' : '') + '</div>' : '';
   if ($('bNext')) $('bNext').onclick = () => { S.idx = S.idx < frontier() - 1 ? frontier() : S.idx + 1; save(); render(true); };
   if ($('bEnd')) $('bEnd').onclick = showResults;
   $('bResults').hidden = !allDone(); if (!$('bResults').hidden && !$('bResults').querySelector('.ico')) $('bResults').insertAdjacentHTML('beforeend', ico('arrow'));
@@ -1411,13 +1411,13 @@ async function showResults() {
   $('dRes').innerHTML = '<div class="sheet res" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
     '<div class="res-kicker">Passport No. ' + S.day + ' · ' + esc(fmtDate()) + '</div>' +
     '<div class="page">' + S.levels.map((l, i) => { const q = clsFor(l.pts, l.max); return '<div class="ink q-' + q + (animate ? '' : ' in') + '" style="--r:' + [-8, 6, -4, 9, -6][i] + 'deg"><span class="ik">' + ICON[l.kind] + '</span><span class="iname">' + esc(GAMES[l.kind].short) + '</span><b>' + l.pts + '</b><span class="iq">' + qualFor(l) + '</span></div>'; }).join('') + '</div>' +
-    '<ul class="res-lines">' + S.levels.map((l, i) => '<li data-rv="' + i + '" role="button" tabindex="0" title="Review this stamp"><span>' + ICON[l.kind] + ' ' + esc(GAMES[l.kind].name) + ' <small>· ' + esc(subj(l)) + (l.hint ? ' · hint' : '') + '</small></span><b>' + l.pts + '<small>/' + l.max + '</small></b></li>').join('') + '</ul>' +
+    '<ul class="res-lines">' + S.levels.map((l, i) => '<li data-rv="' + i + '" role="button" tabindex="0" title="Review this leg"><span>' + ICON[l.kind] + ' ' + esc(GAMES[l.kind].name) + ' <small>· ' + esc(subj(l)) + (l.hint ? ' · hint' : '') + '</small></span><b>' + l.pts + '<small>/' + l.max + '</small></b></li>').join('') + '</ul>' +
     '<div class="tot"><b id="resTotal">' + (animate ? 0 : t) + '</b><small>/ 1,000</small></div>' +
     '<div class="pun' + (animate ? ' hide' : '') + '" id="resPun"><span class="cabin">' + (t >= 1000 ? '✈︎ ' : '') + esc(cabin(t)) + '</span>' + esc(verdict) + '</div>' +
     '<div class="share-wrap' + (animate ? ' hide' : '') + '" id="resShare"><div class="row share-row">' + (canShare()
       ? '<button class="btn accent share-main" id="rsShare">' + ico('share') + '<span>Share your score</span></button><button class="btn ghost share-copy" id="rsCopy" aria-label="Copy your score">' + ico('copy') + '<span>Copy</span></button>'
       : '<button class="btn accent share-main" id="rsCopy">' + ico('share') + '<span>Share your score</span></button>') +
-    '</div><p class="share-note" id="shareNote">Your score and stamps, no spoilers</p><div class="quick-row js-quick"></div></div>' +
+    '</div><p class="share-note" id="shareNote">Your score for each leg, no spoilers</p><div class="quick-row js-quick"></div></div>' +
     '<pre class="sharebox" hidden>' + esc(shareLines.join('\n') + '\n' + shareUrl()) + '</pre>' +
     '<div class="rank" id="resRank"><div class="rk-top"><span class="rk-icon" id="rkIcon">' + (animate ? rB.svg : rA.svg) + '</span><div><small>Traveller rank</small><b id="rkName">' + (animate ? rB.name : rA.name) + '</b></div><span class="rk-xp">+' + t.toLocaleString() + ' XP</span></div>' +
     '<div class="xpbar"><i id="xpFill" style="width:' + pctIn(animate ? xpBefore : xpAfter, animate ? rB : rA) + '%"></i></div><div class="rk-next" id="rkNext">' + nextLine(xpAfter, rA) + '</div></div>' +
@@ -1429,7 +1429,7 @@ async function showResults() {
   openDlg($('dRes')); renderAll();
   const shareText = () => shareLines.join('\n') + '\n' + shareUrl();
   const shareDone = (b, txt, note) => { const span = b.querySelector('span'), old = span.textContent, oldIco = b.querySelector('.ico').outerHTML; span.textContent = txt; b.querySelector('.ico').outerHTML = ico('check'); if (b.classList.contains('share-main')) b.classList.add('done'); $('shareNote').textContent = note;
-    setTimeout(() => { if (!b.isConnected) return; span.textContent = old; b.querySelector('.ico').outerHTML = oldIco; b.classList.remove('done'); $('shareNote').textContent = 'Your score and stamps, no spoilers'; }, 2600); };
+    setTimeout(() => { if (!b.isConnected) return; span.textContent = old; b.querySelector('.ico').outerHTML = oldIco; b.classList.remove('done'); $('shareNote').textContent = 'Your score for each leg, no spoilers'; }, 2600); };
   $('rsCopy').onclick = async e => { const b = e.currentTarget, ok = await GK.copy(shareText(), true); if (ok) { shareDone(b, b.classList.contains('share-main') ? 'Score copied' : 'Copied', 'Paste it in your group chat'); FX.sfx.right(); } else { $('shareNote').textContent = 'Press and hold the text below to copy it'; selectShareBox(); } };
   if ($('rsShare')) $('rsShare').onclick = async () => { try { await navigator.share({text: shareText()}); } catch (err) { if (err && err.name !== 'AbortError') { const ok = await GK.copy(shareText()); if (!ok) selectShareBox(); } } };
   $('dRes').querySelectorAll('.res-lines [data-rv]').forEach(li => { const go = () => { $('dRes').close(); review(+li.dataset.rv); }; li.onclick = go; li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
