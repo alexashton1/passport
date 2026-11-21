@@ -1183,7 +1183,11 @@ const secondTry = L => !newRules() || L.kind === 'odd' || typeof L.tries[0] !== 
 const outlinePay = L => Math.max(0, ...L.tries.filter(t => t !== L.code && byCode.has(t)).map(t => near(t, L.code)));
 // Pin: distance decay scaled to the country, so 150 km off Belgium costs more than 150 km off Brazil.
 const pinScale = code => Math.min(900, Math.max(250, Math.sqrt(byCode.get(code).ar || 0) * 1.5));
-const pinFactor = (km, code) => km <= 25 ? 1 : Math.exp(-km / pinScale(code));
+// From No. 4 the pin is scored close to GeoGuessr's world map: full marks within 50 km of the country,
+// then a gentle fall-off (scale 1,000 km for the smallest countries up to 1,350 km for the biggest)
+const PIN_V2_FROM = 4;
+const pinScale2 = code => 1000 + (pinScale(code) - 250) / 650 * 350;
+const pinFactor = (km, code, day = S && S.day) => day >= PIN_V2_FROM ? (km <= 50 ? 1 : Math.exp(-(km - 50) / pinScale2(code))) : km <= 25 ? 1 : Math.exp(-km / pinScale(code));
 // Capitals: accept official alternates, seats of government and common spellings, plus a single typo on longer names.
 const CAP_ALT = {ZAF: ['Cape Town', 'Bloemfontein'], BOL: ['La Paz'], CIV: ['Abidjan'], LKA: ['Sri Jayawardenepura Kotte', 'Kotte'], BEN: ['Cotonou'], TZA: ['Dar es Salaam'], NLD: ['The Hague'], MYS: ['Putrajaya'], UKR: ['Kiev'], USA: ['Washington', 'Washington DC'], IND: ['Delhi'], MMR: ['Nay Pyi Taw', 'Naypyitaw'], KAZ: ['Nur-Sultan'], SMR: ['San Marino'], KIR: ['Tarawa'], SWZ: ['Mbabane'], BDI: ['Bujumbura'], PSE: ['East Jerusalem'], CHE: ['Bern', 'Berne'], MDV: ['Male'], STP: ['Sao Tome'], VAT: ['Vatican']};
 function lev(a, b) { if (Math.abs(a.length - b.length) > 1) return 9; const d = Array.from({length: b.length + 1}, (_, j) => j); for (let i = 1; i <= a.length; i++) { let prev = d[0]; d[0] = i; for (let j = 1; j <= b.length; j++) { const t = d[j]; d[j] = Math.min(d[j] + 1, d[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = t; } } return d[b.length]; }
