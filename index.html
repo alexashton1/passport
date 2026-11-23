@@ -120,6 +120,21 @@
 .cd.cd-top{display:flex;align-items:center;justify-content:center;gap:6px;margin:14px 0 2px;font:500 14px var(--sans);color:var(--ink2)}.cd.cd-top b{display:inline;font:600 15px var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);margin:0}.cd.cd-top .ico{width:15px;height:15px;color:var(--accent)}
 .install{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:10px 10px 10px 12px;border-radius:14px;background:var(--fill)}.install>.ico{width:22px;height:22px;flex:none;color:var(--accent)}.install span{flex:1;font-size:13px;line-height:1.35;color:var(--ink2)}.install span>b:first-child{display:block;color:var(--ink);font-size:14px}.install .btn{height:36px;padding:0 16px;font-size:14px;border-radius:10px;background:var(--accent);color:#fff}.install .ib{width:30px;height:30px}.install .ib svg{width:14px;height:14px}
 .switch.remind{margin-top:10px}.switch.remind .ico{width:16px;height:16px;color:var(--accent);vertical-align:-3px;margin-right:6px}.switch.remind span b{display:inline}.switch.remind span{display:block}.switch.remind span b::after{content:'';display:block}
+.past-btn{width:100%;margin-top:10px;height:44px!important;border-radius:12px!important;font-size:15px!important}.past-btn .ico{width:17px;height:17px}
+.archbar{display:flex;align-items:center;gap:10px;margin:2px 16px 8px;padding:8px 8px 8px 12px;border-radius:14px;background:color-mix(in srgb,var(--accent) 10%,transparent);font-size:13px;line-height:1.3;color:var(--ink2)}.archbar[hidden]{display:none}.archbar>.ico{width:18px;height:18px;flex:none;color:var(--accent)}.archbar span{flex:1}.archbar b{color:var(--ink)}.archbar .btn{height:34px;padding:0 12px;font-size:14px;border-radius:10px;gap:4px}.archbar .btn .ico{width:15px;height:15px}
+.arch-intro{color:var(--muted);font-size:14px;line-height:1.45;margin:4px 0 14px}
+.arch-lock{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;background:var(--fill);margin-bottom:10px;font-size:13px;line-height:1.4;color:var(--ink2)}.arch-lock .ico{width:20px;height:20px;flex:none;color:var(--accent)}.arch-lock b{display:block;color:var(--ink);font-size:14px}
+.arch{list-style:none;margin:6px 0 0;padding:0;border-radius:14px;overflow:hidden;background:var(--fill)}.arch li+li{border-top:.5px solid var(--sep)}
+.arch button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:none;border:0;color:var(--ink);text-align:left;cursor:pointer;font:inherit}.arch button:active{background:var(--fill2)}
+.arch .ad b{display:block;font:600 16px var(--sans)}.arch .ad small{color:var(--muted);font-size:13px}
+.arch .as{text-align:right}.arch .as b{display:block;font:600 17px var(--sans);font-variant-numeric:tabular-nums}.arch .as small{color:var(--muted);font-size:12px}.arch .as em{font-style:normal;font-weight:600;color:var(--accent);font-size:15px}.arch .as .ico{width:18px;height:18px;color:var(--muted)}
+.arch .as.q-hit b{color:var(--hit)}.arch .as.q-far b{color:var(--far)}
+.arch button[data-locked]{opacity:.55}
+.quick-row [data-today]{grid-column:1/-1}
+.bonus{margin:14px 0 2px;padding:12px;border-radius:16px;background:var(--fill)}.bonus-h{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.35;color:var(--ink2)}.bonus-h .ico{width:20px;height:20px;flex:none;color:var(--accent)}.bonus-h b{display:block;color:var(--ink);font-size:15px}
+.bonus-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.bonus-b{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:11px 12px;border-radius:12px;border:0;background:var(--surface);color:var(--ink);cursor:pointer;text-align:left;font:inherit}.bonus-b:active{opacity:.6}
+.bonus-b b{font:600 16px var(--sans)}.bonus-b small{font-size:12.5px;color:var(--muted)}.bonus-b.easy b{color:var(--hit)}.bonus-b.hard b{color:var(--accent)}.bonus-b.on{box-shadow:inset 0 0 0 2px currentColor}
 .pass-foot{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 18px}
 .pass-foot b{font-family:var(--serif);font-size:22px;font-variant-numeric:tabular-nums}
 .barcode{display:flex;gap:2px;height:38px;align-items:stretch}.barcode i{background:var(--ink);display:block}
@@ -415,6 +430,7 @@ body{letter-spacing:-.005em}
 
 <main>
   <div class="top"><div class="day">No. <span id="no"></span><small id="date"></small></div><div class="score" id="scorePill" aria-live="polite">Score <b id="total">0</b><span style="color:var(--muted);font-weight:600"> / 1,000</span></div></div>
+  <div class="archbar" id="archbar" hidden></div>
   <ol class="flight" id="steps" aria-label="Today's five legs"></ol>
   <div class="stage card" id="stage">
     <span class="lvtag" id="lvtag"></span>
@@ -455,6 +471,7 @@ body{letter-spacing:-.005em}
     <div><i>__hint__</i><span><b>Stuck?</b> A hint costs a quarter of that leg’s points.</span></div>
     <div><i>__book__</i><span><b>Fill your passport.</b> Get a country right and it’s stamped into your passport for good. Can you collect all 195?</span></div>
     <div><i>__expert__</i><span><b>Too easy?</b> Expert mode in Settings makes you type the answers.</span></div>
+    <div><i>__check__</i><span><b>Want more?</b> After today’s trip, try the easy and hard bonus trips just for fun, or replay the days you missed in Past trips.</span></div>
   </div>
   <button class="btn wide accent" data-close>Let’s go</button>
   <p class="fine legal"><a href="privacy.html">Privacy</a> · No ads, no tracking.</p>
@@ -488,6 +505,7 @@ body{letter-spacing:-.005em}
   </div>
 </div></dialog>
 <dialog id="dRes"></dialog>
+<dialog id="dArch"></dialog>
 
 <script src="config.js"></script><script src="geo.js"></script><script src="data.js"></script><script src="flags.js"></script><script src="common.js"></script>
 <script>
@@ -608,7 +626,7 @@ const Account = (() => {
     const games = {...(cloud.games || {})}; for (const [d, g] of Object.entries(local.games || {})) if (done(g) >= done(games[d])) games[d] = g;
     const book = {...(cloud.book || {})}; for (const [c, v] of Object.entries(local.book || {})) if (!book[c] || v.d < book[c].d) book[c] = v;
     const lp = local.prefs || {}, cp = cloud.prefs || {}, lf = local.fz || {}, cf = cloud.fz || {};
-    return {games, book, prefs: {...cp, ...lp, pid: cp.pid || lp.pid, sent: {...(cp.sent || {}), ...(lp.sent || {})}},
+    return {games, book, bonus: {...(cloud.bonus || {}), ...(local.bonus || {})}, prefs: {...cp, ...lp, pid: cp.pid || lp.pid, sent: {...(cp.sent || {}), ...(lp.sent || {})}},
       fz: {earned: {...(cf.earned || {}), ...(lf.earned || {})}, used: {...(cf.used || {}), ...(lf.used || {})}}};
   }
   // the account panel (Settings) and the "save your passport" card (results, book)
@@ -655,7 +673,7 @@ const Account = (() => {
   });
   return {init, push, pull, signedIn, panel, kind: () => kind, ready: () => ready};
 })();
-function renderAll() { document.querySelectorAll('.js-acct').forEach(el => el.innerHTML = Account.panel(el.dataset.where)); renderQuick(); renderInstall(); }
+function renderAll() { if ($('dArch').open && Account.signedIn() && $('dArch').querySelector('.arch-lock')) return openArchive(); document.querySelectorAll('.js-acct').forEach(el => el.innerHTML = Account.panel(el.dataset.where)); renderQuick(); renderInstall(); }
 // "add to home screen": Android/Chrome gets the real install prompt, iPhone gets the two-tap instructions
 let installEvt = null;
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; renderInstall(); });
@@ -676,7 +694,7 @@ function renderInstall() {
 function renderQuick() {
   document.querySelectorAll('.js-quick').forEach(el => {
     const save = Account.kind() === 'supabase' && !Account.signedIn(), inLeague = myLeagues().length > 0;
-    el.innerHTML = (save ? '<button class="btn ghost" data-q="save">' + ico('book') + 'Save passport</button>' : '') +
+    el.innerHTML = (isPast() ? '<button class="btn accent" data-today>' + ico('arrow') + 'Today’s trip</button>' : '') + (save ? '<button class="btn ghost" data-q="save">' + ico('book') + 'Save passport</button>' : '') +
       '<button class="btn ghost" data-q="league">' + ico('trophy') + (inLeague ? 'Your leagues' : 'Start a league') + '</button>';
     el.onclick = e => { const b = e.target.closest('[data-q]'); if (!b) return;
       if (b.dataset.q === 'league') { openLeagues(); return; }
@@ -687,7 +705,7 @@ function renderQuick() {
 
 /* ================= progress: streaks, freezes, traveller ranks ================= */
 const dayTotal = d => { const g = P.games[d]; return g && g.levels.every(l => l.done) ? g.levels.reduce((a, l) => a + l.pts, 0) : null; };
-const played = d => dayTotal(d) != null && !(P.games[d] && P.games[d].late);
+const played = d => dayTotal(d) != null && !(P.games[d] && (P.games[d].late || P.games[d].archive));
 function streak(upTo) {
   let n = 0, d = upTo || dayNum(); if (!upTo && !played(d)) d--;
   while (d >= 1 && (played(d) || P.fz.used[d])) { if (played(d)) n++; d--; }
@@ -725,6 +743,9 @@ const SVGI = {
   // ui
   hint: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>',
   book: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v16H6.5A1.5 1.5 0 0 0 5 20.5z"/><path d="M5 20.5A1.5 1.5 0 0 0 6.5 22H19v-3"/><circle cx="12" cy="10.5" r="3"/>',
+  spark: '<path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  cal: '<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/>',
   bell: '<path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 8 2.5 8h-17S6 15 6 9z"/><path d="M10.2 20.5a2 2 0 0 0 3.6 0"/>',
   addhome: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>',
   flame: '<path d="M12 21.5c-4 0-6.5-2.6-6.5-6.2 0-3.4 2.5-5.2 3.5-8.3.9 1.6 1.8 2.5 3 2.8-.3-2.6.8-5.2 3-6.8.2 3.7 3.5 6.2 3.5 11.3 0 4.1-2.6 7.2-6.5 7.2z"/>',
@@ -740,7 +761,7 @@ const ico = (name, cls) => '<svg class="ico' + (cls ? ' ' + cls : '') + '" viewB
 const ICON = new Proxy({}, {get: (_, k) => ico(k)});
 
 const RANKS = [[0, 'Tourist', '🎒', 'tourist'], [500, 'Day-tripper', '🧳', 'daytripper'], [2500, 'Backpacker', '🥾', 'backpacker'], [8000, 'Explorer', '🧭', 'explorer'], [14000, 'Navigator', '⛵', 'navigator'], [22000, 'Cartographer', '🗺️', 'cartographer'], [32000, 'Globetrotter', '🌍', 'globetrotter'], [45000, 'Ambassador', '🎖️', 'ambassador'], [60000, 'Legend', '👑', 'legend']];
-const xpTotal = () => Object.keys(P.games).reduce((a, d) => a + (dayTotal(+d) || 0), 0);
+const xpTotal = () => Object.keys(P.games).reduce((a, d) => a + Math.round((dayTotal(+d) || 0) * (P.games[d].archive ? .5 : 1)), 0);
 function rankOf(xp) { let i = 0; while (i < RANKS.length - 1 && xp >= RANKS[i + 1][0]) i++; const [min, name, icon, svg] = RANKS[i], next = RANKS[i + 1]; return {i, name, icon, svg: ico(svg), min, next: next ? next[0] : null, nextName: next ? next[1] : null}; }
 
 /* ================= feel: sound, haptics, flying points, confetti ================= */
@@ -815,8 +836,10 @@ function build(day = dayNum()) {
   for (let k = 1; k <= day; k++) { lv = buildDay(k, k >= NOREP_FROM ? seen : null); if (k < day) levelCodes(lv).forEach(c => seen.set(c, k)); }
   return lv;
 }
-function buildDay(day, seen) {
-  const r = GK.rng(GK.hash(GAME + ':' + day)), used = new Set();
+function buildDay(day, seen, bonus) {
+  // bonus trips ('easy' / 'hard') use their own seed and a fixed difficulty, and steer clear of the day's main answers
+  const r = GK.rng(GK.hash(GAME + ':' + day + (bonus ? ':' + bonus : ''))), used = new Set(bonus ? levelCodes(build(day)) : []);
+  const T = lv => bonus === 'easy' ? (lv < 3 ? 0 : 1) : bonus === 'hard' ? Math.max(3, lv) : lv;
   const age = x => seen && seen.has(x.c) ? day - seen.get(x.c) : 1e9, fresh = x => age(x) > NOREP_WIN;
   const take = (pool, ok = () => true) => {
     if (!seen) { const c = shuffle(r, pool).find(x => !used.has(x.c) && ok(x)) || shuffle(r, UN).find(x => !used.has(x.c) && ok(x)); used.add(c.c); return c; }
@@ -832,14 +855,14 @@ function buildDay(day, seen) {
   const kinds = day >= NEWRULES_FROM ? [...shuffle(r, Object.keys(GAMES).filter(k => k !== 'pin')).slice(0, 4), 'pin'] : shuffle(r, Object.keys(GAMES)).slice(0, 5);
   return kinds.map((kind, lv) => {
     const L = {kind, lv, max: LMAX[lv], done: false, pts: 0, tries: [], hint: false};
-    const n = nOpts(lv);
-    if (kind === 'outline') L.code = take(OUTLINE_POOL[lv]).c;
-    if (kind === 'flag') { const a = take(FAME[lv]); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
-    if (kind === 'capital') { const a = take(FAME[lv], c => c.cap); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1, c => c.cap && c.cap !== a.cap)]).map(c => c.c); }
-    if (kind === 'whose') { const a = take(FAME[lv], c => c.cap); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
-    if (kind === 'borders') { const a = take(FAME[lv], c => c.b.filter(b => byCode.has(b)).length >= 3); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, 999).filter(c => !a.b.includes(c.c)).slice(0, n - 1)]).map(c => c.c); }
+    const n = nOpts(bonus ? T(lv) : lv);
+    if (kind === 'outline') L.code = take(OUTLINE_POOL[T(lv)]).c;
+    if (kind === 'flag') { const a = take(FAME[T(lv)]); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
+    if (kind === 'capital') { const a = take(FAME[T(lv)], c => c.cap); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1, c => c.cap && c.cap !== a.cap)]).map(c => c.c); }
+    if (kind === 'whose') { const a = take(FAME[T(lv)], c => c.cap); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, n - 1)]).map(c => c.c); }
+    if (kind === 'borders') { const a = take(FAME[T(lv)], c => c.b.filter(b => byCode.has(b)).length >= 3); L.code = a.c; L.options = shuffle(r, [a, ...distract(a, 999).filter(c => !a.b.includes(c.c)).slice(0, n - 1)]).map(c => c.c); }
     if (kind === 'odd') {
-      const s = take(FAME[day >= FAIR_FROM ? Math.max(0, lv - 1) : lv], c => c.b.filter(b => byCode.has(b)).length >= n - 1); const nb = shuffle(r, s.b.filter(b => byCode.has(b))).slice(0, n - 1);
+      const s = take(FAME[bonus ? T(lv) : day >= FAIR_FROM ? Math.max(0, lv - 1) : lv], c => c.b.filter(b => byCode.has(b)).length >= n - 1); const nb = shuffle(r, s.b.filter(b => byCode.has(b))).slice(0, n - 1);
       const near = UN.filter(c => c.c !== s.c && !s.b.includes(c.c) && !used.has(c.c)).map(c => [c, distKm(c.ll, s.ll)]).sort((a, b) => a[1] - b[1]);
       let odd = near.slice(0, 6);
       if (seen) { const ten = near.slice(0, 10), top = Math.max(...ten.map(([c]) => Math.min(age(c), NOREP_WIN + 1))); odd = ten.filter(([c]) => Math.min(age(c), NOREP_WIN + 1) === top).slice(0, 6); }
@@ -847,7 +870,7 @@ function buildDay(day, seen) {
       L.subject = s.c; L.code = o.c; L.options = shuffle(r, [o.c, ...nb]);
     }
     if (kind === 'bigger') {
-      const band = (day >= FAIR_FROM ? [[2, 5], [1.6, 2.5], [1.45, 2], [1.3, 1.7], [1.3, 1.7]] : [[2, 5], [1.6, 2.5], [1.35, 1.8], [1.18, 1.45], [1.05, 1.25]])[lv], pool = UN.filter(c => c.rank && c.rank <= 175);
+      const band = (day >= FAIR_FROM ? [[2, 5], [1.6, 2.5], [1.45, 2], [1.3, 1.7], [1.3, 1.7]] : [[2, 5], [1.6, 2.5], [1.35, 1.8], [1.18, 1.45], [1.05, 1.25]])[bonus === 'easy' ? 0 : bonus === 'hard' ? 4 : lv], pool = UN.filter(c => c.rank && c.rank <= 175);
       L.duels = []; L.cur = 0; let guard = 0;
       while (L.duels.length < 5 && guard++ < 5000) { const a = pick(r, pool), b = pick(r, pool); if (a.c === b.c || used.has(a.c) || used.has(b.c)) continue; if (seen && guard < 4000 && (age(a) <= 21 || age(b) <= 21)) continue; const q = Math.max(a.ar, b.ar) / Math.min(a.ar, b.ar); if (q < band[0] || q > band[1]) continue; used.add(a.c); used.add(b.c); L.duels.push([a.c, b.c]); }
     }
@@ -856,12 +879,14 @@ function buildDay(day, seen) {
       const bands = [ranked.filter(c => c.rank <= 35), ranked.filter(c => c.rank > 35 && c.rank <= 85), ranked.filter(c => c.rank > 85 && c.rank <= 135), ranked.filter(c => c.rank > 135 && c.rank <= 172), ranked.filter(c => c.ar < 5000 && !['VAT', 'MCO', 'NRU'].includes(c.c))];
       // From No. 4 the finale follows the week: friendly on Monday and Tuesday, tiny countries at the weekend
       const wd = new Date(GK.EPOCH + (day - 1) * 864e5).getUTCDay(), WEEK = [4, 1, 1, 2, 2, 3, 4];
-      const finale = day >= FAIR_FROM ? bands[WEEK[wd]] : day >= NEWRULES_FROM ? [...bands[3], ...bands[4]] : bands[lv];
+      const finale = bonus ? bands[bonus === 'easy' ? 0 : 4] : day >= FAIR_FROM ? bands[WEEK[wd]] : day >= NEWRULES_FROM ? [...bands[3], ...bands[4]] : bands[lv];
       L.code = take(finale).c; L.pin = null; L.km = null;
     }
     return L;
   });
 }
+const dateOf = d => new Date(GK.EPOCH + (d - 1) * 864e5).toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'});
+const isPast = () => !!S && (S.day !== dayNum() || !!S.bonus);
 let S = P.games[dayNum()];
 function fresh() { S = {day: dayNum(), idx: 0, levels: build()}; P.games[S.day] = S; persist(); }
 if (!S) fresh();
@@ -885,7 +910,7 @@ function openBook() {
   $('dBook').innerHTML = '<div class="sheet" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
     '<h2>My passport</h2><div class="bookhead"><svg class="ring" viewBox="0 0 92 92"><circle cx="46" cy="46" r="40" fill="none" stroke="var(--surface2)" stroke-width="9"/><circle cx="46" cy="46" r="40" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + (C * pct) + ' ' + C + '" transform="rotate(-90 46 46)"/></svg>' +
     '<div><div class="n">' + got + ' <span style="font-size:18px;color:var(--muted)">/ ' + BOOK.length + '</span></div><p>countries stamped. Get any country right and it’s stamped in for good.</p></div></div>' +
-    '<div class="js-acct" data-where="book"></div>' +
+    '<button class="btn ghost past-btn" data-past>' + ico('cal') + 'Past trips</button><div class="js-acct" data-where="book"></div>' +
     REGIONS.map(reg => {
       const list = BOOK.filter(c => c.r === reg).sort((a, z) => a.n.localeCompare(z.n)), n = list.filter(c => b[c.c]).length;
       return '<div class="region"><h4>' + reg + '<span>' + n + ' / ' + list.length + '</span></h4><div class="pbar"><i style="width:' + (n / list.length * 100) + '%"></i></div><div class="tiles">' +
@@ -894,8 +919,52 @@ function openBook() {
   openDlg($('dBook')); renderAll();
 }
 
+/* ---------- bonus trips: an easy and a hard extra every day, purely for fun ---------- */
+P.bonus = P.bonus || {};
+function bonusOffer() {
+  if (S.day !== dayNum() || S.archive) return '';
+  const card = m => { const g = P.bonus[S.day + ':' + m], t = g && g.levels.every(l => l.done) ? g.levels.reduce((a, l) => a + l.pts, 0) : null;
+    return '<button class="bonus-b ' + m + (S.bonus === m ? ' on' : '') + '" data-bonus="' + m + '"><b>' + (m === 'easy' ? 'Easy' : 'Hard') + '</b><small>' + (t != null ? t + ' / 1,000' : g ? 'Continue' : m === 'easy' ? 'Famous countries' : 'Tiny and tricky') + '</small></button>'; };
+  return '<div class="bonus"><div class="bonus-h">' + ico('spark') + '<span><b>Fancy another trip?</b>Two bonus trips today, just for fun. They don’t count towards anything.</span></div><div class="bonus-row">' + card('easy') + card('hard') + '</div></div>';
+}
+function goBonus(m) {
+  const d = dayNum(), k = d + ':' + m;
+  if (!P.bonus[k]) P.bonus[k] = {day: d, idx: 0, levels: buildDay(d, null, m), bonus: m};
+  S = P.bonus[k]; S.idx = allDone() ? 0 : frontier(); persist(); lastIdx = -1; render(false); window.scrollTo({top: 0});
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-bonus]'); if (!b) return; document.querySelectorAll('dialog[open]').forEach(x => x.close()); goBonus(b.dataset.bonus); });
+
+/* ---------- past trips ---------- */
+const ARCH_FREE = 3;   // the last three days are open to everyone; the rest need a (free) account
+const archLocked = d => Account.kind() === 'supabase' && !Account.signedIn() && d < dayNum() - ARCH_FREE;
+function openArchive() {
+  const T = dayNum(), days = []; for (let d = T - 1; d >= 1; d--) days.push(d);
+  const locked = days.some(archLocked);
+  $('dArch').innerHTML = '<div class="sheet" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
+    '<h2>Past trips</h2><p class="arch-intro">Play the days you missed or look back at your own. Archive trips earn stamps and half XP, but don’t count for streaks or leaderboards.</p>' +
+    (locked ? '<div class="arch-lock">' + ico('lock') + '<span><b>Sign in to unlock every trip</b>The last ' + ARCH_FREE + ' days are open to everyone. A free account opens the full archive.</span></div>' : '') +
+    (days.length ? '<ul class="arch">' + days.map(d => { const g = P.games[d], tot = dayTotal(d), lock = archLocked(d) && !(g && g.levels.some(l => l.done));
+      const status = tot != null ? '<b>' + tot + '</b><small>' + esc(cabin(tot)) + (g.archive ? ' · archive' : '') + '</small>' : g && g.levels.some(l => l.done) ? '<em>Continue</em>' : lock ? ico('lock') : '<em>Play</em>';
+      return '<li><button data-day="' + d + '"' + (lock ? ' data-locked' : '') + '><span class="ad"><b>No. ' + d + '</b><small>' + esc(dateOf(d)) + '</small></span><span class="as' + (tot != null ? ' q-' + clsFor(tot, 1000) : '') + '">' + status + '</span></button></li>'; }).join('') + '</ul>'
+      : '<p class="arch-intro">No past trips yet. Come back tomorrow.</p>') + (locked ? '<div class="js-acct" data-where="arch" style="margin-top:14px"></div>' : '') + '</div>';
+  openDlg($('dArch')); renderAll();
+}
+function goDay(d) {
+  if (d === dayNum()) return reloadToday();
+  if (!P.games[d]) P.games[d] = {day: d, idx: 0, levels: build(d), archive: true};
+  S = P.games[d]; const f = frontier(); S.idx = allDone() ? 0 : f; persist(); lastIdx = -1; render(false); window.scrollTo({top: 0});
+}
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-past]')) { e.preventDefault(); return openArchive(); }
+  if (e.target.closest('[data-today]')) { document.querySelectorAll('dialog[open]').forEach(x => x.close()); return reloadToday(); }
+  const b = e.target.closest('#dArch [data-day]'); if (!b) return;
+  if (b.hasAttribute('data-locked')) { const i = $('dArch').querySelector('[data-ac="email"]'); if (i) { i.scrollIntoView({block: 'center', behavior: 'smooth'}); setTimeout(() => i.focus({preventScroll: true}), 350); } toast('Sign in to unlock older trips'); return; }
+  $('dArch').close(); goDay(+b.dataset.day);
+});
+
 /* ---------- history / streak ---------- */
 function dayComplete() {   // streak freezes for account holders + today's scoreboard
+  if (isPast()) return;
   if (Account.signedIn()) { const st = streak(); if (st > 0 && st % 7 === 0 && !P.fz.earned[S.day] && freezes() < 2) { P.fz.earned[S.day] = 1; persist(); setTimeout(() => toast('' + st + ' days in a row: streak freeze earned'), 2200); } }
   submitScore(S.day, total());
 }
@@ -1059,7 +1128,8 @@ const Pin = (() => {
 /* ---------- rendering ---------- */
 let lastIdx = -1;
 function render(animate) {
-  $('no').textContent = S.day; $('date').textContent = fmtDate(); if (!$('total').dataset.anim) $('total').textContent = total();
+  $('no').textContent = S.day; $('date').textContent = dateOf(S.day);
+  $('archbar').hidden = !isPast(); if (isPast()) $('archbar').innerHTML = (S.bonus ? ico('spark') : ico('cal')) + '<span><b>' + (S.bonus ? (S.bonus === 'easy' ? 'Easy' : 'Hard') + ' bonus trip' : S.archive ? 'Archive trip' : 'Looking back') + '</b> ' + (S.bonus ? 'Just for fun. Nothing here counts.' : S.archive ? 'No streaks or leaderboards, half XP. Stamps still count.' : 'Your trip from ' + esc(dateOf(S.day)) + '.') + '</span><button class="btn ghost" data-today>Today' + ico('arrow') + '</button>'; if (!$('total').dataset.anim) $('total').textContent = total();
   { const parked = allDone(), fr = frontier(), prog = parked ? 1 : (fr + (S.levels[fr].done ? .5 : -.5)) / 4;
     $('steps').innerHTML = '<span class="trail" aria-hidden="true"></span><span class="jet' + (parked ? ' parked' : '') + '" aria-hidden="true">' + ico('plane') + '</span>' + S.levels.map((l, i) => { const now = !l.done && i === S.idx;
       return '<li class="fs' + (l.done ? ' done s-' + clsFor(l.pts, l.max) + (i === S.idx ? ' viewing' : '') : now ? ' now' : '') + '"' + (l.done ? ' data-rv="' + i + '" role="button" tabindex="0"' : '') + ' aria-label="' + GAMES[l.kind].name + ', ' + (l.done ? l.pts + ' of ' + l.max + '. Review this leg' : l.max + ' points') + '"><span class="fsn">' + (l.done ? l.pts : ico(l.kind)) + '</span><span class="fsl">' + GAMES[l.kind].short + '<small>' + (l.done ? '/' + l.max : l.max) + '</small></span></li>'; }).join('');
@@ -1136,7 +1206,7 @@ $('bHint').onclick = () => { const L = lvl(); if (L.done || L.hint) return; L.hi
 function finish(L, factor, bookCode) {
   const before = total();
   L.done = true; L.pts = Math.round(L.max * factor * (L.hint ? 1 - HINT_COST : 1));
-  L.booked = !!(L.pts > 0 && bookCode); if (L.booked) L.newBook = addToBook(bookCode, L.kind);
+  L.booked = !!(L.pts > 0 && bookCode && !S.bonus); if (L.booked) L.newBook = addToBook(bookCode, L.kind);
   save(); if (allDone()) dayComplete();
   render(true);
   // the satisfying bit
@@ -1449,13 +1519,14 @@ const shareUrl = () => location.protocol === 'file:' ? location.href.split('#')[
 function selectShareBox() { const el = document.querySelector('#dRes .sharebox'); if (!el) return; el.hidden = false; const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); el.scrollIntoView({block: 'nearest'}); }
 async function showResults() {
   const t = total(), stamps = S.levels.filter(stamped).length, verdict = pun(t, S.day), st = streak(), n = Object.keys(P.book).length;
-  const xpAfter = xpTotal(), xpBefore = xpAfter - t, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
+  const gained = S.bonus ? 0 : S.archive ? Math.round(t / 2) : isPast() ? 0 : t, xpAfter = xpTotal(), xpBefore = xpAfter - gained, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
   // what gets copied: cabin label, points per game, total
   const EMO_G = {outline: '🌍', flag: '🏳️', capital: '🏛️', whose: '🏙️', borders: '🗺️', odd: '🧩', bigger: '⚖️', pin: '📍'};
-  const shareLines = ['Passport No. ' + S.day + ' · ' + cabin(t) + ' ✈️', S.levels.map(l => EMO_G[l.kind] + l.pts).join(' · '), 'Final Score: ' + t.toLocaleString('en-GB') + ' / 1,000'];
+  const BONUS_NAME = {easy: 'Easy', hard: 'Hard'};
+  const shareLines = ['Passport No. ' + S.day + (S.archive ? ' (archive)' : S.bonus ? ' ' + BONUS_NAME[S.bonus] + ' bonus' : '') + ' · ' + cabin(t) + ' ✈️', S.levels.map(l => EMO_G[l.kind] + l.pts).join(' · '), 'Final Score: ' + t.toLocaleString('en-GB') + ' / 1,000'];
   const subj = l => l.kind === 'bigger' ? 'Five head-to-heads' : l.kind === 'odd' ? byCode.get(l.subject).n : byCode.get(l.code).n;
   $('dRes').innerHTML = '<div class="sheet res" tabindex="-1" autofocus><button class="ib x" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
-    '<div class="res-kicker">Passport No. ' + S.day + ' · ' + esc(fmtDate()) + '</div>' +
+    '<div class="res-kicker">' + (S.archive ? 'Archive · ' : S.bonus ? BONUS_NAME[S.bonus] + ' bonus trip · ' : '') + 'Passport No. ' + S.day + ' · ' + esc(dateOf(S.day)) + '</div>' +
     '<div class="page">' + S.levels.map((l, i) => { const q = clsFor(l.pts, l.max); return '<div class="ink q-' + q + (animate ? '' : ' in') + '" style="--r:' + [-8, 6, -4, 9, -6][i] + 'deg"><span class="ik">' + ICON[l.kind] + '</span><span class="iname">' + esc(GAMES[l.kind].short) + '</span><b>' + l.pts + '</b><span class="iq">' + qualFor(l) + '</span></div>'; }).join('') + '</div>' +
     '<ul class="res-lines">' + S.levels.map((l, i) => '<li data-rv="' + i + '" role="button" tabindex="0" title="Review this leg"><span>' + ICON[l.kind] + ' ' + esc(GAMES[l.kind].name) + ' <small>· ' + esc(subj(l)) + (l.hint ? ' · hint' : '') + '</small></span><b>' + l.pts + '<small>/' + l.max + '</small></b></li>').join('') + '</ul>' +
     '<div class="tot"><b id="resTotal">' + (animate ? 0 : t) + '</b><small>/ 1,000</small></div>' +
@@ -1463,10 +1534,10 @@ async function showResults() {
     '<div class="share-wrap' + (animate ? ' hide' : '') + '" id="resShare"><div class="row share-row">' + (canShare()
       ? '<button class="btn accent share-main" id="rsShare">' + ico('share') + '<span>Share your score</span></button><button class="btn ghost share-copy" id="rsCopy" aria-label="Copy your score">' + ico('copy') + '<span>Copy</span></button>'
       : '<button class="btn accent share-main" id="rsCopy">' + ico('share') + '<span>Share your score</span></button>') +
-    '</div><p class="share-note" id="shareNote">Your score for each leg, no spoilers</p><div class="quick-row js-quick"></div><div class="js-install"></div><div class="cd cd-top">' + ico('plane') + ' Next trip in <b class="js-cd">--:--:--</b></div></div>' +
+    '</div><p class="share-note" id="shareNote">Your score for each leg, no spoilers</p>' + bonusOffer() + '<div class="quick-row js-quick"></div><div class="js-install"></div><div class="cd cd-top">' + ico('plane') + ' Next trip in <b class="js-cd">--:--:--</b></div><button class="btn ghost past-btn" data-past>' + ico('cal') + 'Play past trips</button></div>' +
     '<pre class="sharebox" hidden>' + esc(shareLines.join('\n') + '\n' + shareUrl()) + '</pre>' +
-    '<div class="rank" id="resRank"><div class="rk-top"><span class="rk-icon" id="rkIcon">' + (animate ? rB.svg : rA.svg) + '</span><div><small>Traveller rank</small><b id="rkName">' + (animate ? rB.name : rA.name) + '</b></div><span class="rk-xp">+' + t.toLocaleString() + ' XP</span></div>' +
-    '<div class="xpbar"><i id="xpFill" style="width:' + pctIn(animate ? xpBefore : xpAfter, animate ? rB : rA) + '%"></i></div><div class="rk-next" id="rkNext">' + nextLine(xpAfter, rA) + '</div></div>' +
+    (S.bonus ? '' : '<div class="rank" id="resRank"><div class="rk-top"><span class="rk-icon" id="rkIcon">' + (animate ? rB.svg : rA.svg) + '</span><div><small>Traveller rank</small><b id="rkName">' + (animate ? rB.name : rA.name) + '</b></div><span class="rk-xp">+' + gained.toLocaleString() + ' XP</span></div>' +
+    '<div class="xpbar"><i id="xpFill" style="width:' + pctIn(animate ? xpBefore : xpAfter, animate ? rB : rA) + '%"></i></div><div class="rk-next" id="rkNext">' + nextLine(xpAfter, rA) + '</div></div>') +
     '<div class="res-global" id="resGlobal"></div>' +
     '<div id="resLeague"></div>' +
     '<div class="js-acct" data-where="results"></div>' +
@@ -1481,7 +1552,7 @@ async function showResults() {
   $('dRes').querySelectorAll('.res-lines [data-rv]').forEach(li => { const go = () => { $('dRes').close(); review(+li.dataset.rv); }; li.onclick = go; li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
   if ($('rsReplay')) $('rsReplay').onclick = () => { $('dRes').close(); delete P.games[S.day]; fresh(); lastIdx = -1; render(false); };
   // global rank (if a scoreboard is connected)
-  (async () => { await submitScore(S.day, t); leagueSummary(); let r = null, r2 = null; try { [r, r2] = await Promise.all([fetchRank(S.day, t), fetchRank(S.day, t + 1)]); } catch (e) {} if (!r || !$('resGlobal')) return;
+  if (!isPast()) (async () => { await submitScore(S.day, t); leagueSummary(); let r = null, r2 = null; try { [r, r2] = await Promise.all([fetchRank(S.day, t), fetchRank(S.day, t + 1)]); } catch (e) {} if (!r || !$('resGlobal')) return;
     // above = players who scored more; ties share a place ("joint 2nd"), so a shared top score reads as a win, not "top 100%"
     const above = r2 ? Math.max(0, r.total - r2.below) : r.total - r.below - 1, ties = r2 ? Math.max(1, r2.below - r.below) : 1, place = above + 1, joint = ties > 1 ? 'joint ' : '';
     const beat = r.total > 1 ? Math.round(r.below / (r.total - 1) * 100) : 0, top = Math.max(1, Math.ceil(place / r.total * 100));
@@ -1499,6 +1570,7 @@ async function showResults() {
   const end = 350 + inks.length * 430 + 250;
   setTimeout(() => { $('resPun').classList.remove('hide'); $('resShare').classList.remove('hide'); if (t >= 850) FX.confetti(120); if (t >= 700) FX.sfx.right(); }, end);
   setTimeout(() => {
+    if (!$('xpFill')) return;   // bonus trips have no rank card
     if (rA.i > rB.i) { $('xpFill').style.width = '100%'; setTimeout(() => { $('rkIcon').innerHTML = rA.svg; $('rkName').textContent = rA.name; $('resRank').classList.add('up'); $('xpFill').style.transition = 'none'; $('xpFill').style.width = '0%'; void $('xpFill').offsetWidth; $('xpFill').style.transition = ''; $('xpFill').style.width = pctIn(xpAfter, rA) + '%'; FX.sfx.rank(); FX.confetti(140); toast(rA.icon + ' Promoted to ' + rA.name + '!'); }, 700); }
     else $('xpFill').style.width = pctIn(xpAfter, rA) + '%';
   }, end + 500);
