@@ -828,7 +828,7 @@ const PUNS = [
   [400, ['Economy class, but you got there.', 'Halfway round the world. Not bad for a day trip.']],
   [250, ['Lost your luggage, found a few answers.', 'You took the scenic route today.']],
   [100, ['Missed the connecting flight.', 'Passport control has a few questions.']],
-  [0, ['Didn’t make it past check-in. Tomorrow’s another flight.', 'Grounded today. Clear skies tomorrow.']],
+  [0, ['Didn’t make it past check-in. Tomorrow’s another flight.', 'No flights today. Clear skies tomorrow.']],
 ];
 const CABINS = [[1000, 'Captain'], [900, 'First class'], [800, 'Business class'], [650, 'Premium economy'], [500, 'Economy'], [350, 'Delayed'], [200, 'Lost luggage'], [0, 'Grounded']];
 const cabin = t => CABINS.find(([m]) => t >= m)[1];
@@ -1477,9 +1477,9 @@ const medal = i => '<span class="md' + (i < 3 ? ' m' + (i + 1) : '') + '">' + (i
 function boardHtml(ms, T, w0) {
   const today = ms.map(m => ({...m, s: m.scores[T]})).sort((a, b) => (b.s ?? -1) - (a.s ?? -1) || a.name.localeCompare(b.name));
   const done = today.filter(m => m.s != null);
-  const rowsToday = today.map((m, i) => '<li class="' + (m.me ? 'me' : '') + '"><span class="rk">' + (m.s != null ? medal(i) : '·') + '</span><span class="nm">' + esc(m.name) + (m.me ? ' <small>(you)</small>' : '') + '</span>' + (m.s != null ? '<span class="pts">' + m.s + '</span>' : '<span class="fine">not played yet</span>') + '</li>').join('');
+  const rowsToday = today.map((m, i) => '<li class="' + (m.me ? 'me' : '') + '"><span class="rk">' + (m.s != null ? medal(done.filter(x => x.s > m.s).length) : '·') + '</span><span class="nm">' + esc(m.name) + (m.me ? ' <small>(you)</small>' : '') + '</span>' + (m.s != null ? '<span class="pts">' + m.s + '</span>' : '<span class="fine">not played yet</span>') + '</li>').join('');
   const week = ms.map(m => { let pts = 0; for (let d = w0; d <= T; d++) pts += m.scores[d] || 0; return {...m, pts}; }).sort((a, b) => b.pts - a.pts || a.name.localeCompare(b.name));
-  const rowsWeek = week.map((m, i) => '<li class="' + (m.me ? 'me' : '') + '"><span class="rk">' + medal(i) + '</span><span class="nm">' + esc(m.name) + '</span><span class="pts">' + m.pts.toLocaleString() + '</span></li>').join('');
+  const rowsWeek = week.map((m, i) => '<li class="' + (m.me ? 'me' : '') + '"><span class="rk">' + medal(week.filter(x => x.pts > m.pts).length) + '</span><span class="nm">' + esc(m.name) + '</span><span class="pts">' + m.pts.toLocaleString() + '</span></li>').join('');
   return '<h4>Today · No. ' + T + ' <span>' + done.length + ' of ' + ms.length + ' played</span></h4><ol class="lb">' + rowsToday + '</ol><h4>This week <span>since Monday</span></h4><ol class="lb">' + rowsWeek + '</ol>';
 }
 $('lgList').addEventListener('click', async e => {
@@ -1505,8 +1505,9 @@ async function leagueSummary() {
     try {
       const ms = await League.board(l.code, T, T), played = ms.filter(m => m.scores[T] != null).sort((a, b) => b.scores[T] - a.scores[T]), i = played.findIndex(m => m.me);
       if (i < 0) return '<li><b>' + esc(l.name) + '</b>: updating…</li>';
-      const lead = i === 0 ? (played.length > 1 ? ' · leading by ' + (played[0].scores[T] - played[1].scores[T]) : '') : ' · ' + (played[0].scores[T] - played[i].scores[T]) + ' behind ' + esc(played[0].name);
-      return '<li><span>' + medal(i) + '</span><span><b>' + esc(l.name) + '</b> · ' + ordinal(i + 1) + ' of ' + played.length + lead + (ms.length > played.length ? ' <small>(' + (ms.length - played.length) + ' still to play)</small>' : '') + '</span></li>';
+      const mine = played[i].scores[T], place = played.filter(m => m.scores[T] > mine).length, rivals = played.filter(m => m.scores[T] === mine && !m.me);
+      const lead = place > 0 ? ' · ' + (played[0].scores[T] - mine) + ' behind ' + esc(played[0].name) : rivals.length ? ' · level with ' + esc(rivals[0].name) + (rivals.length > 1 ? ' and ' + (rivals.length - 1) + ' more' : '') : played.length > 1 ? ' · leading by ' + (mine - played.find(m => m.scores[T] < mine).scores[T]) : '';
+      return '<li><span>' + medal(place) + '</span><span><b>' + esc(l.name) + '</b> · ' + (rivals.length ? 'joint ' : '') + ordinal(place + 1) + ' of ' + played.length + lead + (ms.length > played.length ? ' <small>(' + (ms.length - played.length) + ' still to play)</small>' : '') + '</span></li>';
     } catch (e) { return '<li><b>' + esc(l.name) + '</b>: couldn’t load</li>'; }
   }));
   if (!$('dRes').open) return;
@@ -1541,7 +1542,7 @@ function showBoarding() {
     '<div class="pass-league" id="passLeague" hidden></div><div class="tear"></div><div class="pass-foot"><div><small>Gate closes in</small><b class="js-cd">--:--:--</b></div><div class="barcode" aria-hidden="true">' + bars + '</div></div></div>' +
     '<button class="btn wide accent board-go" id="bBoard">Board ' + ico('plane') + '</button>' +
     (first ? '<button class="linkbtn" id="bHow" style="display:block;margin:8px auto 0">How does it work?</button>' : '') + '</div>';
-  openDlg($('dBoard')); boardingLeagueLine();
+  openDlg($('dBoard')); boardingLeagueLine(); requestAnimationFrame(() => $('bBoard').focus({preventScroll: true}));   // Enter boards straight away
   $('bBoard').onclick = () => { FX.sfx.board(); $('dBoard').close(); P.prefs.boarded = day; persist(); };
   if ($('bHow')) $('bHow').onclick = () => openDlg($('dHelp'));
 }

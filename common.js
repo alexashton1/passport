@@ -76,7 +76,11 @@ window.GK = (() => {
 
   /* ---- search / autocomplete ---- */
   const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9 ]/g, ' ').replace(/\b(the|of)\b/g, ' ').replace(/\s+/g, ' ').trim();
-  const SEARCH = C.map(c => ({c, n: norm(c.n), a: c.a}));
+  const EXTRA = {GBR: ['england', 'scotland', 'wales', 'northern ireland', 'united kingdom'], USA: ['us', 'united states of america', 'states'], NLD: ['the netherlands'], CHN: ['prc'], KOR: ['korea'], PRK: ['dprk'], COD: ['drc', 'congo kinshasa'], COG: ['congo brazzaville'], CZE: ['czech'], VAT: ['holy see', 'vatican'], MMR: ['burma'], TLS: ['east timor'], SWZ: ['swaziland'], CPV: ['cape verde'], MKD: ['macedonia'], TUR: ['turkey'], CIV: ['ivory coast']};
+  const SEARCH = C.map(c => ({c, n: norm(c.n), a: [...new Set([...(c.a || []), ...(EXTRA[c.c] || [])].map(norm))]}));
+  // edit distance capped at 3, for catching typos like "Untied Kingdom" or "Phillipines"
+  const dist = (a, b) => { if (Math.abs(a.length - b.length) > 2) return 9; let p = Array.from({length: b.length + 1}, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) { const c = [i]; for (let j = 1; j <= b.length; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1) - (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1] ? 1 : 0)); p = c; } return p[b.length]; };
   function search(q) {
     q = norm(q); if (!q) return [];
     const out = [];
@@ -85,6 +89,7 @@ window.GK = (() => {
       if (s.n === q || s.a.includes(q)) sc = 0; else if (s.n.startsWith(q)) sc = 1; else if (s.n.split(' ').some(w => w.startsWith(q))) sc = 2; else if (s.a.some(a => a.startsWith(q))) sc = 3; else if (q.length > 2 && s.n.includes(q)) sc = 4;
       if (sc >= 0) out.push([sc, s.c]);
     }
+    if (!out.length && q.length >= 5) for (const s of SEARCH) { const d = Math.min(dist(q, s.n), ...s.a.filter(a => a.length >= 4).map(a => dist(q, a))); if (d <= (q.length >= 9 ? 2 : 1)) out.push([5 + d, s.c]); }
     out.sort((a, b) => a[0] - b[0] || (b[1].un - a[1].un) || a[1].n.localeCompare(b[1].n));
     return out.slice(0, 7).map(x => x[1]);
   }
@@ -92,7 +97,7 @@ window.GK = (() => {
     let matches = [], sel = 0;
     const show = () => {
       matches = search(input.value); sel = 0;
-      if (!matches.length) { list.classList.remove('on'); return; }
+      if (!matches.length) { list.classList.remove('on'); list.innerHTML = ''; return; }
       list.innerHTML = matches.map((c, i) => '<li role="option" aria-selected="' + (i === 0) + '" data-c="' + c.c + '" class="' + (used().includes(c.c) ? 'used' : '') + '"><span>' + c.f + '</span>' + esc(c.n) + '</li>').join('');
       list.classList.add('on');
     };
