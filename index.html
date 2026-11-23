@@ -135,6 +135,13 @@
 .bonus-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
 .bonus-b{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:11px 12px;border-radius:12px;border:0;background:var(--surface);color:var(--ink);cursor:pointer;text-align:left;font:inherit}.bonus-b:active{opacity:.6}
 .bonus-b b{font:600 16px var(--sans)}.bonus-b small{font-size:12.5px;color:var(--muted)}.bonus-b.easy b{color:var(--hit)}.bonus-b.hard b{color:var(--accent)}.bonus-b.on{box-shadow:inset 0 0 0 2px currentColor}
+.hstreak{display:inline-flex;align-items:center;gap:3px;margin-left:8px;padding:2px 8px 2px 6px;border-radius:99px;background:color-mix(in srgb,#E8742A 14%,transparent);color:#D2601A;font:600 13px var(--sans);vertical-align:3px}.hstreak[hidden]{display:none}.hstreak .ico{width:14px;height:14px}
+.streak-card{margin:16px 0 0;padding:14px;border-radius:16px;background:var(--fill)}.streak-card.hot{background:color-mix(in srgb,#E8742A 13%,transparent)}
+.sk-flag{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:4px 10px;border-radius:99px;background:#D2601A;color:#fff;font:600 12px var(--sans);letter-spacing:.04em;text-transform:uppercase}.sk-flag .ico{width:14px;height:14px}
+.sk-row{display:flex;align-items:flex-end;justify-content:space-between}.sk-now{display:flex;align-items:baseline;gap:6px}.sk-now .ico{width:24px;height:24px;color:#D2601A;align-self:center}.sk-now b{font:600 32px/1 var(--serif)}.sk-now small{color:var(--muted);font-size:14px}
+.sk-best{text-align:right}.sk-best small{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}.sk-best b{font:600 22px/1.1 var(--serif)}
+.sk-line{margin:8px 0 10px;font-size:14px;line-height:1.4;color:var(--ink2)}.sk-line b{color:var(--ink)}
+.sk-ms{display:flex;gap:6px}.sk-ms span{flex:1;text-align:center;padding:6px 0;border-radius:10px;background:var(--surface);color:var(--muted);font:600 13px var(--sans)}.sk-ms span.on{background:#D2601A;color:#fff}.sk-ms span.nx{box-shadow:inset 0 0 0 1.5px #D2601A;color:#D2601A}
 .pass-foot{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 18px}
 .pass-foot b{font-family:var(--serif);font-size:22px;font-variant-numeric:tabular-nums}
 .barcode{display:flex;gap:2px;height:38px;align-items:stretch}.barcode i{background:var(--ink);display:block}
@@ -429,7 +436,7 @@ body{letter-spacing:-.005em}
 </div></header>
 
 <main>
-  <div class="top"><div class="day">No. <span id="no"></span><small id="date"></small></div><div class="score" id="scorePill" aria-live="polite">Score <b id="total">0</b><span style="color:var(--muted);font-weight:600"> / 1,000</span></div></div>
+  <div class="top"><div class="day">No. <span id="no"></span><small id="date"></small><span class="hstreak" id="hstreak" hidden></span></div><div class="score" id="scorePill" aria-live="polite">Score <b id="total">0</b><span style="color:var(--muted);font-weight:600"> / 1,000</span></div></div>
   <div class="archbar" id="archbar" hidden></div>
   <ol class="flight" id="steps" aria-label="Today's five legs"></ol>
   <div class="stage card" id="stage">
@@ -626,7 +633,7 @@ const Account = (() => {
     const games = {...(cloud.games || {})}; for (const [d, g] of Object.entries(local.games || {})) if (done(g) >= done(games[d])) games[d] = g;
     const book = {...(cloud.book || {})}; for (const [c, v] of Object.entries(local.book || {})) if (!book[c] || v.d < book[c].d) book[c] = v;
     const lp = local.prefs || {}, cp = cloud.prefs || {}, lf = local.fz || {}, cf = cloud.fz || {};
-    return {games, book, bonus: {...(cloud.bonus || {}), ...(local.bonus || {})}, prefs: {...cp, ...lp, pid: cp.pid || lp.pid, sent: {...(cp.sent || {}), ...(lp.sent || {})}},
+    return {games, book, bonus: {...(cloud.bonus || {}), ...(local.bonus || {})}, prefs: {...cp, ...lp, pid: cp.pid || lp.pid, best: Math.max(cp.best || 0, lp.best || 0), ms: {...(cp.ms || {}), ...(lp.ms || {})}, sent: {...(cp.sent || {}), ...(lp.sent || {})}},
       fz: {earned: {...(cf.earned || {}), ...(lf.earned || {})}, used: {...(cf.used || {}), ...(lf.used || {})}}};
   }
   // the account panel (Settings) and the "save your passport" card (results, book)
@@ -711,6 +718,11 @@ function streak(upTo) {
   while (d >= 1 && (played(d) || P.fz.used[d])) { if (played(d)) n++; d--; }
   return n;
 }
+// longest run ever (freeze days keep a run alive), remembered so it survives anything
+function longestRun() { let best = 0, run = 0; for (let d = 1; d <= dayNum(); d++) { if (played(d)) best = Math.max(best, ++run); else if (!P.fz.used[d]) run = 0; } return best; }
+const bestStreak = () => Math.max(P.prefs.best || 0, longestRun());
+const MILESTONES = [[3, 'Weekend away', 100], [7, 'Week-long wanderer', 250], [14, 'Fortnight abroad', 500], [30, 'Month on the road', 1000], [50, 'Seasoned traveller', 1500], [100, 'Hundred-day voyage', 3000], [365, 'Round the world', 10000]];
+const msXP = () => MILESTONES.reduce((a, [n, , xp]) => a + ((P.prefs.ms || {})[n] ? xp : 0), 0);
 const freezes = () => Math.max(0, Math.min(2, Object.keys(P.fz.earned).length - Object.keys(P.fz.used).length));
 function applyFreezes() {   // account holders only: cover missed days automatically
   if (!Account.signedIn()) return;
@@ -761,7 +773,7 @@ const ico = (name, cls) => '<svg class="ico' + (cls ? ' ' + cls : '') + '" viewB
 const ICON = new Proxy({}, {get: (_, k) => ico(k)});
 
 const RANKS = [[0, 'Tourist', '🎒', 'tourist'], [500, 'Day-tripper', '🧳', 'daytripper'], [2500, 'Backpacker', '🥾', 'backpacker'], [8000, 'Explorer', '🧭', 'explorer'], [14000, 'Navigator', '⛵', 'navigator'], [22000, 'Cartographer', '🗺️', 'cartographer'], [32000, 'Globetrotter', '🌍', 'globetrotter'], [45000, 'Ambassador', '🎖️', 'ambassador'], [60000, 'Legend', '👑', 'legend']];
-const xpTotal = () => Object.keys(P.games).reduce((a, d) => a + Math.round((dayTotal(+d) || 0) * (P.games[d].archive ? .5 : 1)), 0);
+const xpTotal = () => Object.keys(P.games).reduce((a, d) => a + Math.round((dayTotal(+d) || 0) * (P.games[d].archive ? .5 : 1)), 0) + msXP();
 function rankOf(xp) { let i = 0; while (i < RANKS.length - 1 && xp >= RANKS[i + 1][0]) i++; const [min, name, icon, svg] = RANKS[i], next = RANKS[i + 1]; return {i, name, icon, svg: ico(svg), min, next: next ? next[0] : null, nextName: next ? next[1] : null}; }
 
 /* ================= feel: sound, haptics, flying points, confetti ================= */
@@ -887,6 +899,8 @@ function buildDay(day, seen, bonus) {
 }
 const dateOf = d => new Date(GK.EPOCH + (d - 1) * 864e5).toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'});
 const isPast = () => !!S && (S.day !== dayNum() || !!S.bonus);
+P.prefs.best = Math.max(P.prefs.best || 0, longestRun()); P.prefs.ms = P.prefs.ms || {};
+for (const [n] of MILESTONES) if (P.prefs.best >= n && !P.prefs.ms[n]) P.prefs.ms[n] = 1;   // milestones already passed before this feature
 let S = P.games[dayNum()];
 function fresh() { S = {day: dayNum(), idx: 0, levels: build()}; P.games[S.day] = S; persist(); }
 if (!S) fresh();
@@ -917,6 +931,21 @@ function openBook() {
         list.map(c => '<div class="tile' + (b[c.c] ? (b[c.c].d === S.day ? ' new' : '') : ' no') + '" title="' + esc(c.n) + (b[c.c] ? ' · stamped on No. ' + b[c.c].d : '') + '">' + flag(c.c) + '<span>' + esc(c.n) + '</span></div>').join('') + '</div></div>';
     }).join('') + '</div>';
   openDlg($('dBook')); renderAll();
+}
+
+/* ---------- streak card on the results ---------- */
+function streakCard(st, msBonus) {
+  const best = bestStreak(), nb = S.newBest != null, m = S.milestone && MILESTONES.find(([n]) => n === S.milestone), got = P.prefs.ms || {};
+  const next = MILESTONES.find(([n]) => n > st);
+  const head = nb ? '<div class="sk-flag">' + ico('trophy') + ' New best streak!</div>' : m ? '<div class="sk-flag">' + ico('flame') + ' ' + esc(m[1]) + '</div>' : '';
+  const line = m ? '<b>' + esc(m[1]) + '</b> milestone: <b>+' + m[2].toLocaleString() + ' XP</b>.' + (nb && S.newBest > 0 ? ' Your old best was ' + S.newBest + ' day' + (S.newBest === 1 ? '' : 's') + '.' : '')
+    : nb ? (S.newBest > 0 ? 'You beat your old best of ' + S.newBest + ' day' + (S.newBest === 1 ? '' : 's') + '.' : 'Your longest run so far.')
+    : st >= 1 && best > st ? (best - st) + ' more day' + (best - st === 1 ? '' : 's') + ' to beat your best of ' + best + '.'
+    : next ? (next[0] - st) + ' more day' + (next[0] - st === 1 ? '' : 's') + ' to <b>' + esc(next[1]) + '</b> (+' + next[2].toLocaleString() + ' XP).' : 'Legendary. Keep going.';
+  return '<div class="streak-card' + (nb || m ? ' hot' : '') + '">' + head +
+    '<div class="sk-row"><span class="sk-now">' + ico('flame') + '<b>' + st + '</b><small>day streak</small></span><span class="sk-best"><small>Best</small><b>' + best + '</b></span></div>' +
+    '<p class="sk-line">' + line + '</p>' +
+    '<div class="sk-ms">' + MILESTONES.slice(0, 6).map(([n, name]) => '<span class="' + (got[n] ? 'on' : '') + (st < n && next && next[0] === n ? ' nx' : '') + '" title="' + esc(name) + '">' + n + '</span>').join('') + '</div></div>';
 }
 
 /* ---------- bonus trips: an easy and a hard extra every day, purely for fun ---------- */
@@ -965,6 +994,11 @@ document.addEventListener('click', e => {
 /* ---------- history / streak ---------- */
 function dayComplete() {   // streak freezes for account holders + today's scoreboard
   if (isPast()) return;
+  { const st = streak(), prev = P.prefs.best || 0; P.prefs.ms = P.prefs.ms || {};
+    if (st >= 2 && st > prev) S.newBest = prev;                       // remember the old record for the message
+    P.prefs.best = Math.max(prev, st);
+    const m = MILESTONES.find(([n]) => n === st); if (m && !P.prefs.ms[st]) { P.prefs.ms[st] = S.day; S.milestone = st; }
+    persist(); }
   if (Account.signedIn()) { const st = streak(); if (st > 0 && st % 7 === 0 && !P.fz.earned[S.day] && freezes() < 2) { P.fz.earned[S.day] = 1; persist(); setTimeout(() => toast('' + st + ' days in a row: streak freeze earned'), 2200); } }
   submitScore(S.day, total());
 }
@@ -1129,6 +1163,7 @@ const Pin = (() => {
 let lastIdx = -1;
 function render(animate) {
   $('no').textContent = S.day; $('date').textContent = dateOf(S.day);
+  { const st = streak(); $('hstreak').hidden = st < 2 || isPast(); $('hstreak').innerHTML = ico('flame') + st; $('hstreak').title = st + '-day streak'; }
   $('archbar').hidden = !isPast(); if (isPast()) $('archbar').innerHTML = (S.bonus ? ico('spark') : ico('cal')) + '<span><b>' + (S.bonus ? (S.bonus === 'easy' ? 'Easy' : 'Hard') + ' bonus trip' : S.archive ? 'Archive trip' : 'Looking back') + '</b> ' + (S.bonus ? 'Just for fun. Nothing here counts.' : S.archive ? 'No streaks or leaderboards, half XP. Stamps still count.' : 'Your trip from ' + esc(dateOf(S.day)) + '.') + '</span><button class="btn ghost" data-today>Today' + ico('arrow') + '</button>'; if (!$('total').dataset.anim) $('total').textContent = total();
   { const parked = allDone(), fr = frontier(), prog = parked ? 1 : (fr + (S.levels[fr].done ? .5 : -.5)) / 4;
     $('steps').innerHTML = '<span class="trail" aria-hidden="true"></span><span class="jet' + (parked ? ' parked' : '') + '" aria-hidden="true">' + ico('plane') + '</span>' + S.levels.map((l, i) => { const now = !l.done && i === S.idx;
@@ -1519,7 +1554,8 @@ const shareUrl = () => location.protocol === 'file:' ? location.href.split('#')[
 function selectShareBox() { const el = document.querySelector('#dRes .sharebox'); if (!el) return; el.hidden = false; const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); el.scrollIntoView({block: 'nearest'}); }
 async function showResults() {
   const t = total(), stamps = S.levels.filter(stamped).length, verdict = pun(t, S.day), st = streak(), n = Object.keys(P.book).length;
-  const gained = S.bonus ? 0 : S.archive ? Math.round(t / 2) : isPast() ? 0 : t, xpAfter = xpTotal(), xpBefore = xpAfter - gained, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
+  const msBonus = !isPast() && S.milestone ? MILESTONES.find(([n]) => n === S.milestone)[2] : 0;
+  const gained = S.bonus ? 0 : S.archive ? Math.round(t / 2) : isPast() ? 0 : t + msBonus, xpAfter = xpTotal(), xpBefore = xpAfter - gained, rB = rankOf(xpBefore), rA = rankOf(xpAfter), seen = !!S.seenResults, animate = !seen && !FX.calm;
   // what gets copied: cabin label, points per game, total
   const EMO_G = {outline: '🌍', flag: '🏳️', capital: '🏛️', whose: '🏙️', borders: '🗺️', odd: '🧩', bigger: '⚖️', pin: '📍'};
   const BONUS_NAME = {easy: 'Easy', hard: 'Hard'};
@@ -1536,6 +1572,7 @@ async function showResults() {
       : '<button class="btn accent share-main" id="rsCopy">' + ico('share') + '<span>Share your score</span></button>') +
     '</div><p class="share-note" id="shareNote">Your score for each leg, no spoilers</p>' + bonusOffer() + '<div class="quick-row js-quick"></div><div class="js-install"></div><div class="cd cd-top">' + ico('plane') + ' Next trip in <b class="js-cd">--:--:--</b></div><button class="btn ghost past-btn" data-past>' + ico('cal') + 'Play past trips</button></div>' +
     '<pre class="sharebox" hidden>' + esc(shareLines.join('\n') + '\n' + shareUrl()) + '</pre>' +
+    (isPast() ? '' : streakCard(st, msBonus)) +
     (S.bonus ? '' : '<div class="rank" id="resRank"><div class="rk-top"><span class="rk-icon" id="rkIcon">' + (animate ? rB.svg : rA.svg) + '</span><div><small>Traveller rank</small><b id="rkName">' + (animate ? rB.name : rA.name) + '</b></div><span class="rk-xp">+' + gained.toLocaleString() + ' XP</span></div>' +
     '<div class="xpbar"><i id="xpFill" style="width:' + pctIn(animate ? xpBefore : xpAfter, animate ? rB : rA) + '%"></i></div><div class="rk-next" id="rkNext">' + nextLine(xpAfter, rA) + '</div></div>') +
     '<div class="res-global" id="resGlobal"></div>' +
@@ -1568,7 +1605,8 @@ async function showResults() {
   const inks = [...document.querySelectorAll('.page .ink')]; let run = 0;
   inks.forEach((el, i) => setTimeout(() => { el.classList.add('in'); FX.sfx.stamp(); const pts = S.levels[i].pts; FX.countUp($('resTotal'), run, run + pts, 360, false); run += pts; }, 350 + i * 430));
   const end = 350 + inks.length * 430 + 250;
-  setTimeout(() => { $('resPun').classList.remove('hide'); $('resShare').classList.remove('hide'); if (t >= 850) FX.confetti(120); if (t >= 700) FX.sfx.right(); }, end);
+  setTimeout(() => { $('resPun').classList.remove('hide'); $('resShare').classList.remove('hide'); if (t >= 850 || S.newBest != null || S.milestone) FX.confetti(120); if (t >= 700) FX.sfx.right(); }, end);
+  if (S.newBest != null || S.milestone) setTimeout(() => toast(S.milestone ? '🔥 ' + S.milestone + '-day streak: ' + MILESTONES.find(([n]) => n === S.milestone)[1] + '!' : '🔥 New best streak: ' + st + ' days!'), end + 900);
   setTimeout(() => {
     if (!$('xpFill')) return;   // bonus trips have no rank card
     if (rA.i > rB.i) { $('xpFill').style.width = '100%'; setTimeout(() => { $('rkIcon').innerHTML = rA.svg; $('rkName').textContent = rA.name; $('resRank').classList.add('up'); $('xpFill').style.transition = 'none'; $('xpFill').style.width = '0%'; void $('xpFill').offsetWidth; $('xpFill').style.transition = ''; $('xpFill').style.width = pctIn(xpAfter, rA) + '%'; FX.sfx.rank(); FX.confetti(140); toast(rA.icon + ' Promoted to ' + rA.name + '!'); }, 700); }
