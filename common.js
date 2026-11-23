@@ -120,9 +120,12 @@ window.GK = (() => {
   function Outline(canvas) {
     const ctx = canvas.getContext('2d'), proj = G.geoOrthographic().clipAngle(90).precision(0.3), path = G.geoPath(proj, ctx), grat = G.geoGraticule10();
     let W = 0, H = 0, DPR = 1, colors = readColors(), state = null, view = {scale: 1, others: 0, labels: 0}, raf = 0;
+    // once the map has zoomed out (after a wrong guess, or when reviewing) players can spin and zoom it themselves
+    let baseRot = [0, 0], user = {rot: null, k: 1};
+    const live = () => st.others > 0;
     const st = {code: null, zoom: 0, others: 0, labels: [], tint: {}, reveal: false};
     function levels(code) {
-      const cl = cluster(code); proj.rotate([-cl.center[0], -cl.center[1]]);
+      const cl = cluster(code); baseRot = [-cl.center[0], -cl.center[1]]; proj.rotate(baseRot);
       const pad = Math.min(W, H) * 0.13; proj.fitExtent([[pad, pad], [W - pad, H - pad]], cl.geom);
       const s0 = proj.scale(), sg = Math.min(W, H) / 2 - 14;
       return z => s0 <= sg ? s0 * Math.pow(Math.max(sg, s0 * 0.7) / s0, Math.pow(z, 1.5)) : s0 * Math.pow(sg / s0, z);
@@ -131,7 +134,7 @@ window.GK = (() => {
       if (!st.code || !W) return;
       const cl = cluster(st.code);
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
-      proj.scale(view.scale).translate([W / 2, H / 2]);
+      proj.rotate(user.rot || baseRot).scale(view.scale * user.k).translate([W / 2, H / 2]);
       if (view.others > .01) {
         ctx.globalAlpha = view.others;
         ctx.beginPath(); path({type: 'Sphere'}); ctx.fillStyle = colors.ocean; ctx.fill();
@@ -156,7 +159,7 @@ window.GK = (() => {
       }
     }
     function set(next, animate = true) {
-      Object.assign(st, next); if (!W) return;
+      Object.assign(st, next); user = {rot: null, k: 1}; ctrls.hidden = !live(); if (!W) return;
       const sc = levels(st.code)(st.zoom), target = {scale: sc, others: st.others};
       if (!animate || matchMedia('(prefers-reduced-motion: reduce)').matches) { Object.assign(view, target); draw(); return; }
       cancelAnimationFrame(raf); const from = {...view}, t0 = performance.now(), ms = 850, ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -165,6 +168,27 @@ window.GK = (() => {
     }
     function resize() { const r = canvas.getBoundingClientRect(); DPR = Math.min(devicePixelRatio || 1, 2.5); W = r.width; H = r.height; canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR); if (st.code) { view.scale = levels(st.code)(st.zoom); view.others = st.others; draw(); } }
     new ResizeObserver(resize).observe(canvas);
+    // drag to spin, pinch or scroll to zoom, plus the same zoom buttons as the pin game
+    const ctrls = document.createElement('div'); ctrls.className = 'zoom ozoom'; ctrls.hidden = true;
+    ctrls.innerHTML = '<button data-z="in" aria-label="Zoom in">+</button><button data-z="out" aria-label="Zoom out">−</button><button data-z="home" aria-label="Back to the start" style="font-size:14px">⤢</button>';
+    canvas.parentElement.appendChild(ctrls);
+    const kRange = k => { const whole = (Math.min(W, H) / 2 - 14) * .85, close = levels(st.code)(0) * 2.5; return Math.max(whole / view.scale, Math.min(close / view.scale, k)); };
+    const zoomBy = (f, ease) => { if (!live()) return; const to = kRange(user.k * f);
+      if (!ease || matchMedia('(prefers-reduced-motion: reduce)').matches) { user.k = to; draw(); return; }
+      const from = user.k, t0 = performance.now(); cancelAnimationFrame(raf); const step = now => { const t = Math.min(1, (now - t0) / 260); user.k = from * Math.pow(to / from, 1 - Math.pow(1 - t, 3)); draw(); if (t < 1) raf = requestAnimationFrame(step); }; raf = requestAnimationFrame(step); };
+    ctrls.onclick = e => { const b = e.target.closest('[data-z]'); if (!b) return; const z = b.dataset.z;
+      if (z === 'home') { user = {rot: null, k: 1}; draw(); } else zoomBy(z === 'in' ? 2 : .5, true); };
+    const pts = new Map(); let last = null, pinch = 0;
+    canvas.addEventListener('pointerdown', e => { if (!live()) return; canvas.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); cancelAnimationFrame(raf); last = null; pinch = 0; });
+    canvas.addEventListener('pointermove', e => {
+      if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]); const v = [...pts.values()];
+      if (v.length >= 2) { const d = Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]); if (pinch) { user.k = kRange(user.k * d / pinch); draw(); } pinch = d; last = null; return; }
+      const p = v[0]; if (last) { const deg = 57.3 / (view.scale * user.k), r = (user.rot || baseRot).slice(); r[0] += (p[0] - last[0]) * deg; r[1] = Math.max(-85, Math.min(85, r[1] - (p[1] - last[1]) * deg)); user.rot = r; draw(); } last = p;
+    });
+    const up = e => { pts.delete(e.pointerId); last = null; if (pts.size < 2) pinch = 0; };
+    canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+    canvas.addEventListener('wheel', e => { if (!live()) return; e.preventDefault(); zoomBy(Math.exp(-e.deltaY * .0015)); }, {passive: false});
+    canvas.addEventListener('dblclick', e => { if (live()) zoomBy(2, true); });
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { colors = readColors(); draw(); });
     return {set, redraw: draw};
   }
